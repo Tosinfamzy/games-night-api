@@ -8,13 +8,17 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { ScoringService } from 'src/scoring/scoring.service';
+import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway({ cors: true })
 export class ScoreGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly scoringService: ScoringService) {}
+  constructor(
+    @Inject(forwardRef(() => ScoringService))
+    private readonly scoringService: ScoringService,
+  ) {}
 
   handleConnection(client: any) {
     console.log(`Client connected: ${client.id}`);

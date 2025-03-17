@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Score } from './entities/scoring.entity';
@@ -18,6 +18,7 @@ export class ScoringService {
     private teamRepository: Repository<Team>,
     @InjectRepository(Session)
     private sessionRepository: Repository<Session>,
+    @Inject(forwardRef(() => ScoreGateway))
     private readonly scoreGateway: ScoreGateway,
   ) {}
 

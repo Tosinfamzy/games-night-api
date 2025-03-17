@@ -1,7 +1,14 @@
 import { Player } from 'src/players/entities/player.entity';
 import { Session } from 'src/sessions/entities/session.entity';
-import { PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
+@Entity()
 export class Team {
   @PrimaryGeneratedColumn()
   id: number;

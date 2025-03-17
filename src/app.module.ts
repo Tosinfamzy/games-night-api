@@ -11,7 +11,11 @@ import { Session } from './sessions/entities/session.entity';
 import { Game } from './games/entities/game.entity';
 import { TeamsModule } from './teams/teams.module';
 import { ScoringModule } from './scoring/scoring.module';
-import { ScoreGateway } from './gateways/score.gateway';
+import { Team } from './teams/entities/team.entity';
+import { GatewayModule } from './gateways/gateway.module';
+import { Score } from './scoring/entities/scoring.entity';
+import { ValidationPipe } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -23,16 +27,30 @@ import { ScoreGateway } from './gateways/score.gateway';
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [Game, Session, Player],
+      entities: [Game, Session, Player, Team, Score],
       synchronize: true,
+      autoLoadEntities: true,
+      ssl: true,
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
     }),
     GamesModule,
     SessionsModule,
     PlayersModule,
     TeamsModule,
     ScoringModule,
+    GatewayModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ScoreGateway],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+  ],
 })
 export class AppModule {}
