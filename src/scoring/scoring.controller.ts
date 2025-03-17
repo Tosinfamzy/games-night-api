@@ -1,34 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { ScoringService } from './scoring.service';
-import { CreateScoringDto } from './dto/create-scoring.dto';
-import { UpdateScoringDto } from './dto/update-scoring.dto';
 
 @Controller('scoring')
 export class ScoringController {
   constructor(private readonly scoringService: ScoringService) {}
 
-  @Post()
-  create(@Body() createScoringDto: CreateScoringDto) {
-    return this.scoringService.create(createScoringDto);
+  @Post('/player')
+  async addPointsToPlayer(@Body() body: { playerId: number; points: number }) {
+    return this.scoringService.addPointsToPlayer(body.playerId, body.points);
   }
 
-  @Get()
-  findAll() {
-    return this.scoringService.findAll();
+  @Post('/team')
+  async addPointsToTeam(@Body() body: { teamId: number; points: number }) {
+    return this.scoringService.addPointsToTeam(body.teamId, body.points);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.scoringService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateScoringDto: UpdateScoringDto) {
-    return this.scoringService.update(+id, updateScoringDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.scoringService.remove(+id);
+  @Get('/leaderboard/:sessionId')
+  async getLeaderboard(@Param('sessionId') sessionId: number) {
+    return this.scoringService.getLeaderboard(sessionId);
   }
 }
