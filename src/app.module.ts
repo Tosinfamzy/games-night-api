@@ -11,6 +11,7 @@ import { Session } from './sessions/entities/session.entity';
 import { Game } from './games/entities/game.entity';
 import { TeamsModule } from './teams/teams.module';
 import { ScoringModule } from './scoring/scoring.module';
+import { ScoreGateway } from './gateways/score.gateway';
 
 @Module({
   imports: [
@@ -32,6 +33,6 @@ import { ScoringModule } from './scoring/scoring.module';
     ScoringModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ScoreGateway],
 })
 export class AppModule {}

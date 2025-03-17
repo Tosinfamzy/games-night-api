@@ -5,6 +5,7 @@ import { Score } from './entities/scoring.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import { Session } from 'src/sessions/entities/session.entity';
+import { ScoreGateway } from 'src/gateways/score.gateway';
 
 @Injectable()
 export class ScoringService {
@@ -17,6 +18,7 @@ export class ScoringService {
     private teamRepository: Repository<Team>,
     @InjectRepository(Session)
     private sessionRepository: Repository<Session>,
+    private readonly scoreGateway: ScoreGateway,
   ) {}
 
   async addPointsToPlayer(playerId: number, points: number): Promise<Score> {
@@ -28,7 +30,10 @@ export class ScoringService {
 
     const session = player.session;
     const score = this.scoreRepository.create({ player, session, points });
-    return this.scoreRepository.save(score);
+    await this.scoreRepository.save(score);
+
+    this.scoreGateway.notifyScoreUpdate(session.id);
+    return score;
   }
 
   async addPointsToTeam(teamId: number, points: number): Promise<Score> {
@@ -40,7 +45,10 @@ export class ScoringService {
 
     const session = team.session;
     const score = this.scoreRepository.create({ team, session, points });
-    return this.scoreRepository.save(score);
+    await this.scoreRepository.save(score);
+
+    this.scoreGateway.notifyScoreUpdate(session.id);
+    return score;
   }
 
   async getLeaderboard(sessionId: number) {
