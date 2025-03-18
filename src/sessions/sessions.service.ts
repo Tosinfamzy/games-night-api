@@ -5,13 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Session } from './entities/session.entity';
+import { Session, SessionStatus } from './entities/session.entity';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { AssignPlayersDto } from './dto/assign-players.dto';
 import { Player } from '../players/entities/player.entity';
 import { Game } from '../games/entities/game.entity';
 import { Team } from '../teams/entities/team.entity';
+import { SessionsGateway } from './sessions.gateway';
 
 @Injectable()
 export class SessionsService {
@@ -24,6 +25,7 @@ export class SessionsService {
     private readonly playerRepository: Repository<Player>,
     @InjectRepository(Team)
     private readonly teamRepository: Repository<Team>,
+    private readonly sessionsGateway: SessionsGateway,
   ) {}
 
   async create(createSessionDto: CreateSessionDto): Promise<Session> {
@@ -176,5 +178,136 @@ export class SessionsService {
 
     session.teams = newTeams;
     return this.sessionRepository.save(session);
+  }
+
+  async startSession(id: number): Promise<Session> {
+    const session = await this.findOne(id);
+
+    if (session.status !== SessionStatus.PENDING) {
+      throw new BadRequestException(
+        'Session can only be started from PENDING status',
+      );
+    }
+
+    if (!session.games || session.games.length === 0) {
+      throw new BadRequestException('Cannot start session without games');
+    }
+
+    if (!session.players || session.players.length === 0) {
+      throw new BadRequestException('Cannot start session without players');
+    }
+
+    session.status = SessionStatus.IN_PROGRESS;
+    session.currentGame = session.games[0];
+    const updatedSession = await this.sessionRepository.save(session);
+
+    this.sessionsGateway.notifySessionUpdate(id, 'sessionStarted', {
+      status: SessionStatus.IN_PROGRESS,
+      currentGame: session.currentGame,
+    });
+
+    return updatedSession;
+  }
+
+  async endSession(id: number): Promise<Session> {
+    const session = await this.findOne(id);
+
+    if (session.status === SessionStatus.COMPLETED) {
+      throw new BadRequestException('Session is already completed');
+    }
+
+    session.status = SessionStatus.COMPLETED;
+    session.isActive = false;
+    const updatedSession = await this.sessionRepository.save(session);
+
+    this.sessionsGateway.notifySessionUpdate(id, 'sessionEnded', {
+      status: SessionStatus.COMPLETED,
+    });
+
+    return updatedSession;
+  }
+
+  async moveToNextGame(id: number): Promise<Session> {
+    const session = await this.findOne(id);
+
+    if (session.status !== SessionStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        'Session must be in progress to move to next game',
+      );
+    }
+
+    const currentGameIndex = session.games.findIndex(
+      (game) => game.id === session.currentGameId,
+    );
+
+    if (
+      currentGameIndex === -1 ||
+      currentGameIndex === session.games.length - 1
+    ) {
+      throw new BadRequestException('No more games available in this session');
+    }
+
+    session.currentGame = session.games[currentGameIndex + 1];
+    const updatedSession = await this.sessionRepository.save(session);
+
+    this.sessionsGateway.notifySessionUpdate(id, 'gameChanged', {
+      currentGame: session.currentGame,
+    });
+
+    return updatedSession;
+  }
+
+  async addPlayerToTeam(teamId: number, playerId: number): Promise<Team> {
+    const team = await this.teamRepository.findOne({
+      where: { id: teamId },
+      relations: ['players', 'session'],
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Team with ID ${teamId} not found`);
+    }
+
+    const player = await this.playerRepository.findOne({
+      where: { id: playerId },
+    });
+
+    if (!player) {
+      throw new NotFoundException(`Player with ID ${playerId} not found`);
+    }
+
+    if (!team.players) {
+      team.players = [];
+    }
+
+    team.players.push(player);
+    const updatedTeam = await this.teamRepository.save(team);
+
+    this.sessionsGateway.notifySessionUpdate(team.session.id, 'teamUpdated', {
+      teamId,
+      players: team.players,
+    });
+
+    return updatedTeam;
+  }
+
+  async removePlayerFromTeam(teamId: number, playerId: number): Promise<Team> {
+    const team = await this.teamRepository.findOne({
+      where: { id: teamId },
+      relations: ['players', 'session'],
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Team with ID ${teamId} not found`);
+    }
+
+    team.players = team.players.filter((player) => player.id !== playerId);
+    const updatedTeam = await this.teamRepository.save(team);
+
+    this.sessionsGateway.notifySessionUpdate(team.session.id, 'teamUpdated', {
+      teamId,
+      players: team.players,
+    });
+
+    return updatedTeam;
   }
 }

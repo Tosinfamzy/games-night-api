@@ -8,11 +8,19 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   AfterLoad,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Game } from '../../games/entities/game.entity';
 import { Player } from '../../players/entities/player.entity';
 import { Team } from '../../teams/entities/team.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
+export enum SessionStatus {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
 
 @Entity('sessions')
 export class Session {
@@ -25,6 +33,13 @@ export class Session {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({
+    type: 'enum',
+    enum: SessionStatus,
+    default: SessionStatus.PENDING,
+  })
+  status: SessionStatus;
+
   @ManyToMany(() => Game)
   @JoinTable({
     name: 'session_games',
@@ -32,6 +47,13 @@ export class Session {
     inverseJoinColumn: { name: 'gameId', referencedColumnName: 'id' },
   })
   games: Game[];
+
+  @ManyToOne(() => Game, { nullable: true })
+  @JoinColumn({ name: 'currentGameId' })
+  currentGame: Game;
+
+  @Column({ nullable: true })
+  currentGameId: number;
 
   @OneToMany(() => Player, (player) => player.session)
   players: Player[];

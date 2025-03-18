@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
@@ -157,5 +158,76 @@ export class SessionsController {
     @Body('teams') teams: { teamName: string; playerIds: number[] }[],
   ): Promise<Session> {
     return this.sessionsService.createCustomTeams(+id, teams);
+  }
+
+  @Post(':id/start')
+  @ApiOperation({ summary: 'Start a session' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Session started successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid session state',
+  })
+  startSession(@Param('id') id: string): Promise<Session> {
+    return this.sessionsService.startSession(+id);
+  }
+
+  @Post(':id/end')
+  @ApiOperation({ summary: 'End a session' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Session ended successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid session state',
+  })
+  endSession(@Param('id') id: string): Promise<Session> {
+    return this.sessionsService.endSession(+id);
+  }
+
+  @Post(':id/next-game')
+  @ApiOperation({ summary: 'Move to the next game in the session' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Moved to next game successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'No more games available',
+  })
+  moveToNextGame(@Param('id') id: string): Promise<Session> {
+    return this.sessionsService.moveToNextGame(+id);
+  }
+
+  @Put('teams/:id/players')
+  @ApiOperation({ summary: 'Add a player to a team' })
+  @ApiParam({ name: 'id', description: 'Team ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player added to team successfully',
+  })
+  addPlayerToTeam(@Param('id') id: string, @Body() body: { playerId: number }) {
+    return this.sessionsService.addPlayerToTeam(+id, body.playerId);
+  }
+
+  @Delete('teams/:id/players/:playerId')
+  @ApiOperation({ summary: 'Remove a player from a team' })
+  @ApiParam({ name: 'id', description: 'Team ID' })
+  @ApiParam({ name: 'playerId', description: 'Player ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player removed from team successfully',
+  })
+  removePlayerFromTeam(
+    @Param('id') id: string,
+    @Param('playerId') playerId: string,
+  ) {
+    return this.sessionsService.removePlayerFromTeam(+id, +playerId);
   }
 }
