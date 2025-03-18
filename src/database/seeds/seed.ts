@@ -10,6 +10,7 @@ import { createTeam } from '../factories/team.factory';
 import { createPlayer } from '../factories/player.factory';
 import { createPlayerScore, createTeamScore } from '../factories/score.factory';
 import { config } from 'dotenv';
+import * as faker from 'faker';
 
 // Load environment variables
 config();
@@ -66,7 +67,15 @@ async function seed() {
     // Seed sessions, teams, players, and scores
     for (const game of games) {
       for (let i = 0; i < NUM_SESSIONS_PER_GAME; i++) {
-        const sessionData = createSession(game);
+        // Create a session with 1-3 random games including the current game
+        const sessionGames = faker.random.arrayElements(
+          games,
+          faker.random.number({ min: 1, max: 3 }),
+        );
+        if (!sessionGames.includes(game)) {
+          sessionGames.push(game);
+        }
+        const sessionData = createSession(sessionGames);
         const session = AppDataSource.manager.create(Session, sessionData);
         const savedSession = await AppDataSource.manager.save(session);
         console.log(`Created session for game: ${game.name}`);

@@ -43,6 +43,7 @@ export class SessionsService {
       sessionName: createSessionDto.sessionName,
       isActive: createSessionDto.isActive,
       games,
+      status: SessionStatus.PENDING,
     });
 
     return this.sessionRepository.save(session);
