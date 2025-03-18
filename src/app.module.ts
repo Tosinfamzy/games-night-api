@@ -12,6 +12,12 @@ import { GatewayModule } from './gateways/gateway.module';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { dataSourceOptions } from './config/data-source';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { Game } from './games/entities/game.entity';
+import { Session } from './sessions/entities/session.entity';
+import { Player } from './players/entities/player.entity';
+import { Team } from './teams/entities/team.entity';
+import { GameAnalytics } from './analytics/entities/game-analytics.entity';
 
 @Module({
   imports: [
@@ -20,6 +26,8 @@ import { dataSourceOptions } from './config/data-source';
       ...dataSourceOptions,
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV !== 'production', // Only synchronize in development
+      logging: process.env.NODE_ENV !== 'production',
+      entities: [Game, Session, Player, Team, GameAnalytics],
     }),
     GamesModule,
     SessionsModule,
@@ -27,6 +35,7 @@ import { dataSourceOptions } from './config/data-source';
     TeamsModule,
     ScoringModule,
     GatewayModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

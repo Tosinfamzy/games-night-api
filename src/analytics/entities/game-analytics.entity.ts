@@ -7,12 +7,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Game } from 'src/games/entities/game.entity';
+import { Game } from '../../games/entities/game.entity';
 
 @Entity()
 export class GameAnalytics {
   @ApiProperty({
-    description: 'Unique identifier of the analytics record',
+    description: 'The unique identifier for the analytics',
     example: 1,
   })
   @PrimaryGeneratedColumn()
@@ -27,7 +27,7 @@ export class GameAnalytics {
 
   @ApiProperty({
     description: 'Total number of times this game has been played',
-    example: 150,
+    example: 100,
   })
   @Column({ default: 0 })
   totalPlays: number;
@@ -41,24 +41,24 @@ export class GameAnalytics {
 
   @ApiProperty({
     description: 'Average number of players per session',
-    example: 4.5,
+    example: 4,
   })
   @Column('float', { default: 0 })
   averagePlayers: number;
 
   @ApiProperty({
-    description: 'JSON object containing detailed statistics',
+    description: 'Detailed statistics in JSON format',
     example: {
-      winRates: { 'Player 1': 0.65, 'Player 2': 0.35 },
-      commonStrategies: ['Strategy A', 'Strategy B'],
-      difficultyLevels: { easy: 0.2, medium: 0.5, hard: 0.3 },
+      winRates: { 'Player 1': 0.6, 'Player 2': 0.4 },
+      commonStrategies: ['Aggressive', 'Defensive'],
+      difficultyLevels: { easy: 0.3, medium: 0.5, hard: 0.2 },
     },
   })
-  @Column('jsonb')
+  @Column('jsonb', { default: {} })
   statistics: Record<string, any>;
 
   @ApiProperty({
-    description: 'When the analytics were last updated',
+    description: 'When the analytics were created',
     example: '2024-03-18T12:00:00Z',
   })
   @CreateDateColumn()
