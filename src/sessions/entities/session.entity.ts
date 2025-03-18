@@ -24,12 +24,24 @@ export enum SessionStatus {
 
 @Entity('sessions')
 export class Session {
+  @ApiProperty({
+    description: 'Unique identifier of the session',
+    example: 1,
+  })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({
+    description: 'Name of the session',
+    example: 'Friday Night Games',
+  })
   @Column()
   sessionName: string;
 
+  @ApiProperty({
+    description: 'Whether the session is currently active',
+    example: true,
+  })
   @Column({ default: true })
   isActive: boolean;
 
@@ -40,6 +52,10 @@ export class Session {
   })
   status: SessionStatus;
 
+  @ApiProperty({
+    description: 'Games included in this session',
+    type: () => [Game],
+  })
   @ManyToMany(() => Game)
   @JoinTable({
     name: 'session_games',
@@ -55,15 +71,59 @@ export class Session {
   @Column({ nullable: true })
   currentGameId: number;
 
+  @ApiProperty({
+    description: 'Players participating in this session',
+    type: () => [Player],
+  })
   @OneToMany(() => Player, (player) => player.session)
   players: Player[];
 
   @OneToMany(() => Team, (team) => team.session)
   teams: Team[];
 
+  @ApiProperty({
+    description: 'When the session started',
+    example: '2024-03-18T19:00:00Z',
+  })
+  @Column()
+  startTime: Date;
+
+  @ApiProperty({
+    description: 'When the session ended',
+    example: '2024-03-18T23:00:00Z',
+    required: false,
+  })
+  @Column({ nullable: true })
+  endTime: Date;
+
+  @ApiProperty({
+    description: 'Winner of the session',
+    example: 'Player 1',
+    required: false,
+  })
+  @Column({ nullable: true })
+  winner: string;
+
+  @ApiProperty({
+    description: 'Difficulty level of the session',
+    example: 'medium',
+    enum: ['easy', 'medium', 'hard'],
+    required: false,
+  })
+  @Column({ nullable: true })
+  difficulty: 'easy' | 'medium' | 'hard';
+
+  @ApiProperty({
+    description: 'When the session was created',
+    example: '2024-03-18T18:00:00Z',
+  })
   @CreateDateColumn()
   createdAt: Date;
 
+  @ApiProperty({
+    description: 'When the session was last updated',
+    example: '2024-03-18T23:00:00Z',
+  })
   @UpdateDateColumn()
   updatedAt: Date;
 
