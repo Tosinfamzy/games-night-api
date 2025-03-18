@@ -1,28 +1,55 @@
-import { Game } from 'src/games/entities/game.entity';
-import { Player } from 'src/players/entities/player.entity';
-import { Team } from 'src/teams/entities/team.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToMany,
   Column,
+  ManyToMany,
+  OneToMany,
+  JoinTable,
+  CreateDateColumn,
+  UpdateDateColumn,
+  AfterLoad,
 } from 'typeorm';
+import { Game } from '../../games/entities/game.entity';
+import { Player } from '../../players/entities/player.entity';
+import { Team } from '../../teams/entities/team.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
-@Entity()
+@Entity('sessions')
 export class Session {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Game, { eager: true }) // Fetch game details automatically
-  game: Game;
-
-  @OneToMany(() => Player, (player) => player.session, { cascade: true })
-  players: Player[];
-
-  @OneToMany(() => Team, (team) => team.session, { cascade: true })
-  teams: Team[];
+  @Column()
+  sessionName: string;
 
   @Column({ default: true })
   isActive: boolean;
+
+  @ManyToMany(() => Game)
+  @JoinTable({
+    name: 'session_games',
+    joinColumn: { name: 'sessionId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'gameId', referencedColumnName: 'id' },
+  })
+  games: Game[];
+
+  @OneToMany(() => Player, (player) => player.session)
+  players: Player[];
+
+  @OneToMany(() => Team, (team) => team.session)
+  teams: Team[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ApiProperty({ description: 'Number of players in the session' })
+  playerCount: number;
+
+  @AfterLoad()
+  countPlayers() {
+    this.playerCount = this.players?.length || 0;
+  }
 }
