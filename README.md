@@ -1,6 +1,6 @@
 # Games Night Backend
 
-A NestJS backend application for managing game sessions, players, teams, and scoring.
+A NestJS backend application for managing game sessions, players, teams, and scoring with versioned game rules.
 
 ## Project Structure
 
@@ -16,7 +16,8 @@ games-night-backend/
 │   │   ├── entities/      # Database entities
 │   │   ├── games.controller.ts
 │   │   ├── games.module.ts
-│   │   └── games.service.ts
+│   │   ├── games.service.ts
+│   │   └── game-rules.controller.ts
 │   ├── gateways/          # WebSocket gateways
 │   │   ├── score.gateway.ts
 │   │   └── sessions.gateway.ts
@@ -59,15 +60,47 @@ games-night-backend/
 
 ## Features
 
-- Game session management
-- Player management
-- Team management
-- Real-time scoring
-- WebSocket support for live updates
+- Game session management with multiple games per session
+- Player and team management
+- Real-time scoring with WebSocket support
+- Versioned game rules system
+- Game state management (SETUP, READY, IN_PROGRESS, COMPLETED)
+- Session state tracking (PENDING, IN_PROGRESS, COMPLETED)
 - Swagger API documentation
 - TypeORM database integration
 - Input validation
 - Error handling
+
+## Game Flow
+
+1. **Session Creation**
+
+   - Create a new session with selected games
+   - Configure session settings (difficulty, duration)
+
+2. **Player Management**
+
+   - Add players to the session
+   - Create teams and assign players
+   - Track player ready status
+
+3. **Game Management**
+
+   - Configure game rules and settings
+   - Track game state and rounds
+   - Manage game transitions
+
+4. **Scoring System**
+
+   - Track individual player scores
+   - Track team scores
+   - Real-time score updates via WebSocket
+
+5. **Game Rules Versioning**
+   - Create and manage multiple versions of game rules
+   - Compare rule versions
+   - Set active rule versions
+   - Track rule changes over time
 
 ## Prerequisites
 
@@ -93,8 +126,11 @@ npm install
 3. Create a `.env` file in the root directory:
 
 ```env
-DATABASE_URL=postgresql://username:password@localhost:5432/games_night
-PORT=3000
+DATABASE_HOST=
+DATABASE_PORT=
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_NAME=
 ```
 
 4. Run database migrations:
@@ -139,21 +175,3 @@ Run unit tests:
 ```bash
 npm run test
 ```
-
-Run e2e tests:
-
-```bash
-npm run test:e2e
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.

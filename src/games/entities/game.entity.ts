@@ -9,6 +9,14 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { GameAnalytics } from '../../analytics/entities/game-analytics.entity';
 
+export enum GameState {
+  SETUP = 'setup',
+  READY = 'ready',
+  IN_PROGRESS = 'in_progress',
+  PAUSED = 'paused',
+  COMPLETED = 'completed',
+}
+
 @Entity()
 export class Game {
   @ApiProperty({
@@ -29,6 +37,34 @@ export class Game {
   })
   @Column({ nullable: true })
   rules: string;
+
+  @ApiProperty({
+    description: 'Current state of the game',
+    enum: GameState,
+    example: GameState.SETUP,
+  })
+  @Column({
+    type: 'enum',
+    enum: GameState,
+    default: GameState.SETUP,
+  })
+  state: GameState;
+
+  @ApiProperty({
+    description: 'Current round number',
+    example: 1,
+    required: false,
+  })
+  @Column({ nullable: true })
+  currentRound: number;
+
+  @ApiProperty({
+    description: 'Total number of rounds',
+    example: 5,
+    required: false,
+  })
+  @Column({ nullable: true })
+  totalRounds: number;
 
   @ApiProperty({
     description: 'Analytics for this game',
