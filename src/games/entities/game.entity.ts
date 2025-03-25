@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { GameAnalytics } from '../../analytics/entities/game-analytics.entity';
+import { GameParticipant } from './game-participant.entity';
 
 export enum GameState {
   SETUP = 'setup',
@@ -72,6 +73,13 @@ export class Game {
   })
   @OneToMany(() => GameAnalytics, (analytics) => analytics.game)
   analytics: GameAnalytics[];
+
+  @ApiProperty({
+    description: 'Participants in this game',
+    type: () => [GameParticipant],
+  })
+  @OneToMany(() => GameParticipant, (participant) => participant.game)
+  participants: GameParticipant[];
 
   @ApiProperty({
     description: 'When the game was created',

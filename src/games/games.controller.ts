@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -11,6 +11,8 @@ import { Game, GameState } from './entities/game.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameSetupDto } from './dto/game-setup.dto';
 import { PlayerReadyDto } from './dto/player-ready.dto';
+import { AddPlayerDto } from './dto/add-player.dto';
+import { GameParticipant, ParticipantStatus } from './entities/game-participant.entity';
 
 @ApiTags('games')
 @Controller('games')
@@ -24,49 +26,121 @@ export class GamesController {
     return this.gamesService.findAll();
   }
 
+  @Get(':id/players')
+  @ApiOperation({ summary: 'Get all players in a specific game' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all players in the game with their status and session info',
+    schema: {
+      type: 'object',
+      properties: {
+        players: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              name: { type: 'string' },
+              status: { 
+                type: 'string',
+                enum: Object.values(ParticipantStatus)
+              },
+              joinedAt: { type: 'string', format: 'date-time' },
+              session: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  sessionName: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        total: { type: 'number' }
+      }
+    }
+  })
+  @ApiParam({ name: 'id', description: 'Game ID' })
+  async getGamePlayers(@Param('id') id: string) {
+    return this.gamesService.getGamePlayers(+id);
+  }
+
+  @Post()
   @ApiOperation({ summary: 'Create a new game' })
   @ApiResponse({
     status: 201,
     description: 'Game created successfully',
     type: Game,
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiBody({ type: CreateGameDto })
-  @Post()
+  @ApiBody({
+    type: CreateGameDto,
+    description: 'Game creation data',
+  })
   async create(@Body() createGameDto: CreateGameDto): Promise<Game> {
     return this.gamesService.create(createGameDto.name, createGameDto.rules);
   }
 
-  @ApiOperation({ summary: 'Setup game configuration' })
+  @Put(':id/setup')
+  @ApiOperation({ summary: 'Setup a game with initial configuration' })
   @ApiResponse({
     status: 200,
-    description: 'Game setup completed successfully',
+    description: 'Game setup successfully',
     type: Game,
   })
   @ApiParam({ name: 'id', description: 'Game ID' })
   @ApiBody({ type: GameSetupDto })
-  @Post(':id/setup')
-  async setupGame(
-    @Param('id') id: number,
+  async setup(
+    @Param('id') id: string,
     @Body() setupDto: GameSetupDto,
   ): Promise<Game> {
-    return this.gamesService.setupGame(id, setupDto);
+    return this.gamesService.setupGame(+id, setupDto);
   }
 
-  @ApiOperation({ summary: 'Mark player as ready' })
+  @Post(':id/players')
+  @ApiOperation({ summary: 'Add a player to a game' })
   @ApiResponse({
-    status: 200,
-    description: 'Player ready status updated',
-    type: Game,
+    status: 201,
+    description: 'Player added to game successfully',
+    type: GameParticipant,
   })
   @ApiParam({ name: 'id', description: 'Game ID' })
-  @ApiBody({ type: PlayerReadyDto })
-  @Post(':id/ready')
+  @ApiBody({ type: AddPlayerDto })
+  async addPlayer(
+    @Param('id') id: string,
+    @Body() addPlayerDto: AddPlayerDto,
+  ): Promise<GameParticipant> {
+    return this.gamesService.addPlayer(+id, addPlayerDto.playerId);
+  }
+
+  @Put(':id/players/:playerId/ready')
+  @ApiOperation({ summary: 'Mark a player as ready in a game' })
+  @ApiResponse({
+    status: 200,
+    description: 'Player marked as ready successfully',
+    type: GameParticipant,
+  })
+  @ApiParam({ name: 'id', description: 'Game ID' })
+  @ApiParam({ name: 'playerId', description: 'Player ID' })
   async playerReady(
-    @Param('id') id: number,
-    @Body() readyDto: PlayerReadyDto,
-  ): Promise<Game> {
-    return this.gamesService.playerReady(id, readyDto.playerId);
+    @Param('id') id: string,
+    @Param('playerId') playerId: string,
+  ): Promise<GameParticipant> {
+    return this.gamesService.playerReady(+id, +playerId);
+  }
+
+  @Delete(':id/players/:playerId')
+  @ApiOperation({ summary: 'Remove a player from a game' })
+  @ApiResponse({
+    status: 200,
+    description: 'Player removed from game successfully',
+  })
+  @ApiParam({ name: 'id', description: 'Game ID' })
+  @ApiParam({ name: 'playerId', description: 'Player ID' })
+  async removePlayer(
+    @Param('id') id: string,
+    @Param('playerId') playerId: string,
+  ): Promise<void> {
+    return this.gamesService.removePlayer(+id, +playerId);
   }
 
   @ApiOperation({ summary: 'Start the game' })
