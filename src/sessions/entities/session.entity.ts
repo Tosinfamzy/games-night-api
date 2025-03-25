@@ -84,8 +84,9 @@ export class Session {
   @ApiProperty({
     description: 'When the session started',
     example: '2024-03-18T19:00:00Z',
+    required: false,
   })
-  @Column()
+  @Column({ nullable: true })
   startTime: Date;
 
   @ApiProperty({

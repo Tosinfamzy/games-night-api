@@ -17,12 +17,13 @@ export class CreateSessionDto {
     example: [1, 2, 3],
     type: [Number],
     minItems: 1,
+    required: false,
   })
   @IsArray()
   @IsNumber({}, { each: true })
   @ArrayMinSize(1)
-  @IsNotEmpty()
-  gameIds: number[];
+  @IsOptional()
+  gameIds?: number[];
 
   @ApiProperty({
     description: 'Name of the game session',

@@ -69,7 +69,6 @@ export class AnalyticsService {
 
     const statistics = {
       winRates: this.calculateWinRates(sessions),
-      commonStrategies: this.analyzeCommonStrategies(sessions),
       difficultyLevels: this.analyzeDifficultyLevels(sessions),
       playerEngagement: this.analyzePlayerEngagement(sessions),
       timeDistribution: this.analyzeTimeDistribution(sessions),
@@ -122,23 +121,6 @@ export class AnalyticsService {
     });
 
     return winRates;
-  }
-
-  private analyzeCommonStrategies(sessions: Session[]): string[] {
-    const strategies: Record<string, number> = {};
-
-    sessions.forEach((session) => {
-      session.players?.forEach((player) => {
-        if (player.strategy) {
-          strategies[player.strategy] = (strategies[player.strategy] || 0) + 1;
-        }
-      });
-    });
-
-    return Object.entries(strategies)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([strategy]) => strategy);
   }
 
   private analyzeDifficultyLevels(sessions: Session[]): Record<string, number> {

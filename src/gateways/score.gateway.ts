@@ -29,10 +29,10 @@ export class ScoreGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('getLeaderboard')
-  async handleGetLeaderboard(@MessageBody() sessionId: number) {
-    const leaderboard = await this.scoringService.getLeaderboard(sessionId);
+  async handleGetLeaderboard(@MessageBody() data: { sessionId: number; gameId: number }) {
+    const leaderboard = await this.scoringService.getGameLeaderboard(data.sessionId, data.gameId);
     this.server
-      .to(`session_${sessionId}`)
+      .to(`session_${data.sessionId}`)
       .emit('leaderboardUpdate', leaderboard);
   }
 

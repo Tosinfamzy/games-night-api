@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Player } from 'src/players/entities/player.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import { Session } from 'src/sessions/entities/session.entity';
+import { Game } from 'src/games/entities/game.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -35,4 +36,8 @@ export class Score {
 
   @ManyToOne(() => Session, (session) => session.id, { onDelete: 'CASCADE' })
   session: Session;
+
+  @ApiProperty({ description: 'The game this score belongs to' })
+  @ManyToOne(() => Game, { onDelete: 'CASCADE' })
+  game: Game;
 }

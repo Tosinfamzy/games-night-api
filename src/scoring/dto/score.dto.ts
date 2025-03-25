@@ -9,6 +9,13 @@ export class PlayerScoreDto {
   @IsNumber()
   playerId: number;
 
+  @ApiProperty({
+    description: 'The ID of the game the points are for',
+    example: 1,
+  })
+  @IsNumber()
+  gameId: number;
+
   @ApiProperty({ description: 'The number of points to add', example: 5 })
   @IsNumber()
   points: number;
@@ -21,6 +28,13 @@ export class TeamScoreDto {
   })
   @IsNumber()
   teamId: number;
+
+  @ApiProperty({
+    description: 'The ID of the game the points are for',
+    example: 1,
+  })
+  @IsNumber()
+  gameId: number;
 
   @ApiProperty({ description: 'The number of points to add', example: 10 })
   @IsNumber()

@@ -9,6 +9,7 @@ import { Session, SessionStatus } from './entities/session.entity';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { AssignPlayersDto } from './dto/assign-players.dto';
+import { AddGamesDto } from './dto/add-games.dto';
 import { Player } from '../players/entities/player.entity';
 import { Game } from '../games/entities/game.entity';
 import { Team } from '../teams/entities/team.entity';
@@ -29,23 +30,48 @@ export class SessionsService {
   ) {}
 
   async create(createSessionDto: CreateSessionDto): Promise<Session> {
-    const games = await this.gameRepository.find({
-      where: { id: In(createSessionDto.gameIds) },
-    });
-
-    if (games.length !== createSessionDto.gameIds.length) {
-      throw new NotFoundException(
-        `One or more games with IDs ${createSessionDto.gameIds.join(', ')} not found`,
-      );
-    }
-
     const session = this.sessionRepository.create({
       sessionName: createSessionDto.sessionName,
       isActive: createSessionDto.isActive,
-      games,
       status: SessionStatus.PENDING,
     });
 
+    if (createSessionDto.gameIds) {
+      const games = await this.gameRepository.find({
+        where: { id: In(createSessionDto.gameIds) },
+      });
+
+      if (games.length !== createSessionDto.gameIds.length) {
+        throw new NotFoundException(
+          `One or more games with IDs ${createSessionDto.gameIds.join(', ')} not found`,
+        );
+      }
+
+      session.games = games;
+    }
+
+    return this.sessionRepository.save(session);
+  }
+
+  async addGames(id: number, addGamesDto: AddGamesDto): Promise<Session> {
+    const session = await this.findOne(id);
+
+    if (session.status !== SessionStatus.PENDING) {
+      throw new BadRequestException('Can only add games to a pending session');
+    }
+
+    const games = await this.gameRepository.find({
+      where: { id: In(addGamesDto.gameIds) },
+    });
+
+    if (games.length !== addGamesDto.gameIds.length) {
+      throw new NotFoundException(
+        `One or more games with IDs ${addGamesDto.gameIds.join(', ')} not found`,
+      );
+    }
+
+    // Add new games to existing games
+    session.games = [...(session.games || []), ...games];
     return this.sessionRepository.save(session);
   }
 

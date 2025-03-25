@@ -19,7 +19,7 @@ export class ScoringController {
     private readonly scoreGateway: ScoreGateway,
   ) {}
 
-  @ApiOperation({ summary: 'Add points to a player' })
+  @ApiOperation({ summary: 'Add points to a player in a specific game' })
   @ApiResponse({
     status: 201,
     description: 'Points added successfully',
@@ -29,10 +29,10 @@ export class ScoringController {
   @ApiBody({ type: PlayerScoreDto })
   @Post('/player')
   async addPointsToPlayer(@Body() body: PlayerScoreDto): Promise<Score> {
-    return this.scoringService.addPointsToPlayer(body.playerId, body.points);
+    return this.scoringService.addPointsToPlayer(body.playerId, body.gameId, body.points);
   }
 
-  @ApiOperation({ summary: 'Add points to a team' })
+  @ApiOperation({ summary: 'Add points to a team in a specific game' })
   @ApiResponse({
     status: 201,
     description: 'Points added successfully',
@@ -42,18 +42,33 @@ export class ScoringController {
   @ApiBody({ type: TeamScoreDto })
   @Post('/team')
   async addPointsToTeam(@Body() body: TeamScoreDto): Promise<Score> {
-    return this.scoringService.addPointsToTeam(body.teamId, body.points);
+    return this.scoringService.addPointsToTeam(body.teamId, body.gameId, body.points);
   }
 
-  @ApiOperation({ summary: 'Get leaderboard for a session' })
+  @ApiOperation({ summary: 'Get leaderboard for a specific game in a session' })
   @ApiResponse({
     status: 200,
-    description: 'Returned leaderboard successfully',
+    description: 'Returned game leaderboard successfully',
   })
   @ApiParam({ name: 'sessionId', description: 'The session ID', type: Number })
-  @Get('/leaderboard/:sessionId')
-  async getLeaderboard(@Param('sessionId') sessionId: number) {
-    return this.scoringService.getLeaderboard(sessionId);
+  @ApiParam({ name: 'gameId', description: 'The game ID', type: Number })
+  @Get('/leaderboard/:sessionId/:gameId')
+  async getGameLeaderboard(
+    @Param('sessionId') sessionId: number,
+    @Param('gameId') gameId: number,
+  ) {
+    return this.scoringService.getGameLeaderboard(sessionId, gameId);
+  }
+
+  @ApiOperation({ summary: 'Get aggregated scores for all games in a session' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returned session aggregated scores successfully',
+  })
+  @ApiParam({ name: 'sessionId', description: 'The session ID', type: Number })
+  @Get('/session/:sessionId')
+  async getSessionAggregatedScores(@Param('sessionId') sessionId: number) {
+    return this.scoringService.getSessionAggregatedScores(sessionId);
   }
 
   @ApiOperation({ summary: 'Subscribe to session updates' })

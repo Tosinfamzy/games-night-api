@@ -29,14 +29,6 @@ export class Player {
   name: string;
 
   @ApiProperty({
-    description: 'Strategy used by the player',
-    example: 'Aggressive',
-    required: false,
-  })
-  @Column({ nullable: true })
-  strategy: string;
-
-  @ApiProperty({
     description: 'The session this player belongs to',
     type: () => Session,
   })

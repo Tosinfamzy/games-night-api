@@ -10,12 +10,20 @@ import {
   HttpCode,
   Put,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { AssignPlayersDto } from './dto/assign-players.dto';
 import { Session } from './entities/session.entity';
+import { AddGamesDto } from './dto/add-games.dto';
+import { Player } from '../players/entities/player.entity';
 
 @ApiTags('sessions')
 @Controller('sessions')
@@ -45,7 +53,7 @@ export class SessionsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get session details by ID' })
+  @ApiOperation({ summary: 'Get a session by ID' })
   @ApiParam({ name: 'id', description: 'Session ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -58,6 +66,23 @@ export class SessionsController {
   })
   findOne(@Param('id') id: string): Promise<Session> {
     return this.sessionsService.findOne(+id);
+  }
+
+  @Get(':id/players')
+  @ApiOperation({ summary: 'Get all players in a session' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of players in the session',
+    type: [Player],
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Session not found',
+  })
+  async getSessionPlayers(@Param('id') id: string): Promise<Player[]> {
+    const session = await this.sessionsService.findOne(+id);
+    return session.players;
   }
 
   @Patch(':id')
@@ -229,5 +254,28 @@ export class SessionsController {
     @Param('playerId') playerId: string,
   ) {
     return this.sessionsService.removePlayerFromTeam(+id, +playerId);
+  }
+
+  @Post(':id/games')
+  @ApiOperation({ summary: 'Add games to an existing session' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Games added successfully',
+    type: Session,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Session not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Cannot add games to non-pending session',
+  })
+  addGames(
+    @Param('id') id: string,
+    @Body() addGamesDto: AddGamesDto,
+  ): Promise<Session> {
+    return this.sessionsService.addGames(+id, addGamesDto);
   }
 }
