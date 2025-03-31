@@ -84,10 +84,10 @@ export class GamesService {
       name: participant.player.name,
       status: participant.status,
       joinedAt: participant.createdAt,
-      session: {
+      session: participant.player.session ? {
         id: participant.player.session.id,
         sessionName: participant.player.session.sessionName,
-      },
+      } : null,
     }));
 
     return {

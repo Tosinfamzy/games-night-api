@@ -76,9 +76,15 @@ export class SessionsService {
   }
 
   async findAll(): Promise<Session[]> {
-    return this.sessionRepository.find({
-      relations: ['games', 'players', 'teams'],
-    });
+    try {
+      const sessions = await this.sessionRepository.find({
+        relations: ['games', 'players', 'teams'],
+      });
+      return sessions;
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      throw new Error(`Failed to fetch sessions: ${error.message}`);
+    }
   }
 
   async findOne(id: number): Promise<Session> {

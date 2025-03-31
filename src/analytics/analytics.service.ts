@@ -19,17 +19,18 @@ export class AnalyticsService {
   async updateGameAnalytics(gameId: number): Promise<GameAnalytics> {
     const game = await this.gameRepository.findOne({
       where: { id: gameId },
-      relations: ['sessions'],
     });
 
     if (!game) {
       throw new NotFoundException(`Game with ID ${gameId} not found`);
     }
 
-    const sessions = await this.sessionRepository.find({
-      where: { games: { id: gameId } },
-      relations: ['players'],
-    });
+    const sessions = await this.sessionRepository
+      .createQueryBuilder('session')
+      .innerJoin('session.games', 'game')
+      .leftJoinAndSelect('session.players', 'players')
+      .where('game.id = :gameId', { gameId })
+      .getMany();
 
     const analytics = await this.calculateAnalytics(game, sessions);
     return this.saveAnalytics(game, analytics);
@@ -38,6 +39,7 @@ export class AnalyticsService {
   async getGameAnalytics(gameId: number): Promise<GameAnalytics> {
     const analytics = await this.analyticsRepository.findOne({
       where: { game: { id: gameId } },
+      relations: ['game'],
     });
 
     if (!analytics) {
@@ -171,11 +173,13 @@ export class AnalyticsService {
     };
 
     sessions.forEach((session) => {
-      const hour = session.startTime.getHours();
-      if (hour >= 5 && hour < 12) distribution.morning++;
-      else if (hour >= 12 && hour < 17) distribution.afternoon++;
-      else if (hour >= 17 && hour < 22) distribution.evening++;
-      else distribution.night++;
+      if (session.startTime) {
+        const hour = session.startTime.getHours();
+        if (hour >= 5 && hour < 12) distribution.morning++;
+        else if (hour >= 12 && hour < 17) distribution.afternoon++;
+        else if (hour >= 17 && hour < 22) distribution.evening++;
+        else distribution.night++;
+      }
     });
 
     const total = Object.values(distribution).reduce(

@@ -5,10 +5,12 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { GameAnalytics } from '../../analytics/entities/game-analytics.entity';
 import { GameParticipant } from './game-participant.entity';
+import { Session } from '../../sessions/entities/session.entity';
 
 export enum GameState {
   SETUP = 'setup',
@@ -80,6 +82,13 @@ export class Game {
   })
   @OneToMany(() => GameParticipant, (participant) => participant.game)
   participants: GameParticipant[];
+
+  @ApiProperty({
+    description: 'Sessions this game belongs to',
+    type: () => [Session],
+  })
+  @ManyToMany(() => Session, (session) => session.games)
+  sessions: Session[];
 
   @ApiProperty({
     description: 'When the game was created',

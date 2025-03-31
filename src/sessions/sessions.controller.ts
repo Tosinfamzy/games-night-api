@@ -48,8 +48,17 @@ export class SessionsController {
     description: 'List of all sessions',
     type: [Session],
   })
-  findAll(): Promise<Session[]> {
-    return this.sessionsService.findAll();
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error',
+  })
+  async findAll(): Promise<Session[]> {
+    try {
+      return await this.sessionsService.findAll();
+    } catch (error) {
+      console.error('Controller error fetching sessions:', error);
+      throw error;
+    }
   }
 
   @Get(':id')
