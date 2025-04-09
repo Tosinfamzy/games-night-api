@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -10,7 +11,7 @@ import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { AssignPlayersDto } from './dto/assign-players.dto';
 import { AddGamesDto } from './dto/add-games.dto';
-import { Player } from '../players/entities/player.entity';
+import { Player, PlayerType } from '../players/entities/player.entity';
 import { Game } from '../games/entities/game.entity';
 import { Team } from '../teams/entities/team.entity';
 import { SessionsGateway } from './sessions.gateway';
@@ -30,10 +31,24 @@ export class SessionsService {
   ) {}
 
   async create(createSessionDto: CreateSessionDto): Promise<Session> {
+    const host = await this.playerRepository.findOne({
+      where: { id: createSessionDto.hostId }
+    });
+
+    if (!host) {
+      throw new NotFoundException('Host player not found');
+    }
+
+    if (host.type !== PlayerType.HOST) {
+      throw new ForbiddenException('Only hosts can create sessions');
+    }
+
     const session = this.sessionRepository.create({
       sessionName: createSessionDto.sessionName,
-      isActive: createSessionDto.isActive,
-      status: SessionStatus.PENDING,
+      players: [host],
+      hostId: host.id,
+      isActive: true,
+      status: SessionStatus.PENDING
     });
 
     if (createSessionDto.gameIds) {
@@ -53,8 +68,66 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
+  private async validateHostAccess(sessionId: number, hostId: number): Promise<void> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId }
+    });
+
+    if (!session) {
+      throw new NotFoundException(`Session with ID ${sessionId} not found`);
+    }
+
+    if (session.hostId !== hostId) {
+      throw new ForbiddenException('You do not have access to this session');
+    }
+  }
+
+  async findAll(hostId: number): Promise<Session[]> {
+    const host = await this.playerRepository.findOne({
+      where: { id: hostId }
+    });
+
+    if (!host) {
+      throw new NotFoundException('Host not found');
+    }
+
+    if (host.type !== PlayerType.HOST) {
+      throw new ForbiddenException('Only hosts can view sessions');
+    }
+
+    return this.sessionRepository.find({
+      where: { hostId },
+      relations: ['games', 'players', 'teams'],
+    });
+  }
+
+  async findOne(id: number, hostId: number): Promise<Session> {
+    const host = await this.playerRepository.findOne({
+      where: { id: hostId }
+    });
+
+    if (!host) {
+      throw new NotFoundException('Host not found');
+    }
+
+    if (host.type !== PlayerType.HOST) {
+      throw new ForbiddenException('Only hosts can view sessions');
+    }
+
+    const session = await this.sessionRepository.findOne({
+      where: { id, hostId },
+      relations: ['games', 'players', 'teams', 'teams.players'],
+    });
+
+    if (!session) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    return session;
+  }
+
   async addGames(id: number, addGamesDto: AddGamesDto): Promise<Session> {
-    const session = await this.findOne(id);
+    const session = await this.findOne(id, addGamesDto.hostId);
 
     if (session.status !== SessionStatus.PENDING) {
       throw new BadRequestException('Can only add games to a pending session');
@@ -75,50 +148,22 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async findAll(): Promise<Session[]> {
-    try {
-      const sessions = await this.sessionRepository.find({
-        relations: ['games', 'players', 'teams'],
-      });
-      return sessions;
-    } catch (error) {
-      console.error('Error fetching sessions:', error);
-      throw new Error(`Failed to fetch sessions: ${error.message}`);
-    }
-  }
-
-  async findOne(id: number): Promise<Session> {
-    const session = await this.sessionRepository.findOne({
-      where: { id },
-      relations: ['games', 'players', 'teams', 'teams.players'],
+  async update(id: number, updateSessionDto: UpdateSessionDto): Promise<Session> {
+    await this.findOne(id, updateSessionDto.hostId);
+    const session = await this.sessionRepository.preload({
+      id,
+      ...updateSessionDto,
     });
-
-    if (!session) {
-      throw new NotFoundException(`Session with ID ${id} not found`);
-    }
-
-    return session;
-  }
-
-  async update(
-    id: number,
-    updateSessionDto: UpdateSessionDto,
-  ): Promise<Session> {
-    const session = await this.findOne(id);
-    Object.assign(session, updateSessionDto);
     return this.sessionRepository.save(session);
   }
 
-  async remove(id: number): Promise<void> {
-    const session = await this.findOne(id);
+  async remove(id: number, hostId: number): Promise<void> {
+    const session = await this.findOne(id, hostId);
     await this.sessionRepository.remove(session);
   }
 
-  async assignPlayers(
-    id: number,
-    assignPlayersDto: AssignPlayersDto,
-  ): Promise<Session> {
-    const session = await this.findOne(id);
+  async assignPlayers(id: number, assignPlayersDto: AssignPlayersDto): Promise<Session> {
+    const session = await this.findOne(id, assignPlayersDto.hostId);
 
     const newPlayers = await Promise.all(
       assignPlayersDto.players.map((playerDto) => {
@@ -134,8 +179,8 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async createRandomTeams(id: number, numberOfTeams: number): Promise<Session> {
-    const session = await this.findOne(id);
+  async createRandomTeams(id: number, numberOfTeams: number, hostId: number): Promise<Session> {
+    const session = await this.findOne(id, hostId);
 
     if (!session.players || session.players.length === 0) {
       throw new BadRequestException('No players in session to create teams');
@@ -151,9 +196,7 @@ export class SessionsService {
     }
 
     // Shuffle players
-    const shuffledPlayers = [...session.players].sort(
-      () => Math.random() - 0.5,
-    );
+    const shuffledPlayers = [...session.players].sort(() => Math.random() - 0.5);
     const playersPerTeam = Math.floor(session.players.length / numberOfTeams);
     const extraPlayers = session.players.length % numberOfTeams;
 
@@ -162,10 +205,7 @@ export class SessionsService {
 
     for (let i = 0; i < numberOfTeams; i++) {
       const teamSize = i < extraPlayers ? playersPerTeam + 1 : playersPerTeam;
-      const teamPlayers = shuffledPlayers.slice(
-        playerIndex,
-        playerIndex + teamSize,
-      );
+      const teamPlayers = shuffledPlayers.slice(playerIndex, playerIndex + teamSize);
       playerIndex += teamSize;
 
       const team = this.teamRepository.create({
@@ -183,8 +223,9 @@ export class SessionsService {
   async createCustomTeams(
     id: number,
     teams: { teamName: string; playerIds: number[] }[],
+    hostId: number,
   ): Promise<Session> {
-    const session = await this.findOne(id);
+    const session = await this.findOne(id, hostId);
 
     // Clear existing teams
     if (session.teams) {
@@ -213,8 +254,8 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async startSession(id: number): Promise<Session> {
-    const session = await this.findOne(id);
+  async startSession(id: number, hostId: number): Promise<Session> {
+    const session = await this.findOne(id, hostId);
 
     if (session.status !== SessionStatus.PENDING) {
       throw new BadRequestException(
@@ -242,8 +283,8 @@ export class SessionsService {
     return updatedSession;
   }
 
-  async endSession(id: number): Promise<Session> {
-    const session = await this.findOne(id);
+  async endSession(id: number, hostId: number): Promise<Session> {
+    const session = await this.findOne(id, hostId);
 
     if (session.status === SessionStatus.COMPLETED) {
       throw new BadRequestException('Session is already completed');
@@ -260,8 +301,8 @@ export class SessionsService {
     return updatedSession;
   }
 
-  async moveToNextGame(id: number): Promise<Session> {
-    const session = await this.findOne(id);
+  async moveToNextGame(id: number, hostId: number): Promise<Session> {
+    const session = await this.findOne(id, hostId);
 
     if (session.status !== SessionStatus.IN_PROGRESS) {
       throw new BadRequestException(

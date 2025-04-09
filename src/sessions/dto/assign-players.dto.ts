@@ -6,6 +6,7 @@ import {
   MinLength,
   MaxLength,
   ArrayMinSize,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -24,6 +25,13 @@ class PlayerDto {
 
 export class AssignPlayersDto {
   @ApiProperty({
+    description: 'ID of the host who owns this session',
+    example: 1,
+  })
+  @IsNumber()
+  hostId: number;
+
+  @ApiProperty({
     description: 'Array of players to add to the session',
     type: [PlayerDto],
     example: [
@@ -35,7 +43,7 @@ export class AssignPlayersDto {
   })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => PlayerDto)
   @ArrayMinSize(1)
+  @Type(() => PlayerDto)
   players: PlayerDto[];
 }

@@ -12,9 +12,7 @@ import { Player } from '../../players/entities/player.entity';
 
 export enum ParticipantStatus {
   JOINED = 'joined',
-  READY = 'ready',
-  PLAYING = 'playing',
-  FINISHED = 'finished',
+  READY = 'ready'
 }
 
 @Entity()

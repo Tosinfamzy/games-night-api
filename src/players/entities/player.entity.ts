@@ -5,10 +5,17 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Session } from '../../sessions/entities/session.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { GameParticipant } from '../../games/entities/game-participant.entity';
+
+export enum PlayerType {
+  HOST = 'host',
+  PARTICIPANT = 'participant'
+}
 
 @Entity()
 export class Player {
@@ -29,6 +36,18 @@ export class Player {
   name: string;
 
   @ApiProperty({
+    description: 'Type of player (host or participant)',
+    enum: PlayerType,
+    example: PlayerType.PARTICIPANT,
+  })
+  @Column({
+    type: 'enum',
+    enum: PlayerType,
+    default: PlayerType.PARTICIPANT
+  })
+  type: PlayerType;
+
+  @ApiProperty({
     description: 'The session this player belongs to',
     type: () => Session,
   })
@@ -42,6 +61,13 @@ export class Player {
   })
   @ManyToOne(() => Team, (team) => team.players, { nullable: true })
   team?: Team;
+
+  @ApiProperty({
+    description: 'Game participations of this player',
+    type: () => [GameParticipant],
+  })
+  @OneToMany(() => GameParticipant, (participant) => participant.player)
+  gameParticipants: GameParticipant[];
 
   @ApiProperty({
     description: 'When the player was created',

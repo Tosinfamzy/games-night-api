@@ -5,9 +5,17 @@ import {
   IsOptional,
   MinLength,
   MaxLength,
+  IsNumber,
 } from 'class-validator';
 
 export class UpdateSessionDto {
+  @ApiProperty({
+    description: 'ID of the host who owns this session',
+    example: 1,
+  })
+  @IsNumber()
+  hostId: number;
+
   @ApiProperty({
     description: 'New name for the game session',
     example: 'Saturday Night Bash',

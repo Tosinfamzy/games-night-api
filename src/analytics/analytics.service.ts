@@ -71,9 +71,7 @@ export class AnalyticsService {
 
     const statistics = {
       winRates: this.calculateWinRates(sessions),
-      difficultyLevels: this.analyzeDifficultyLevels(sessions),
-      playerEngagement: this.analyzePlayerEngagement(sessions),
-      timeDistribution: this.analyzeTimeDistribution(sessions),
+      commonStrategies: this.analyzeCommonStrategies(sessions),
     };
 
     return {
@@ -125,73 +123,27 @@ export class AnalyticsService {
     return winRates;
   }
 
-  private analyzeDifficultyLevels(sessions: Session[]): Record<string, number> {
-    const levels: Record<string, number> = {
-      easy: 0,
-      medium: 0,
-      hard: 0,
-    };
-
-    sessions.forEach((session) => {
-      if (session.difficulty) {
-        levels[session.difficulty] = (levels[session.difficulty] || 0) + 1;
-      }
-    });
-
-    const total = Object.values(levels).reduce((sum, count) => sum + count, 0);
-    if (total > 0) {
-      Object.keys(levels).forEach((level) => {
-        levels[level] = levels[level] / total;
-      });
-    }
-
-    return levels;
-  }
-
-  private analyzePlayerEngagement(sessions: Session[]): Record<string, number> {
-    const engagement: Record<string, number> = {};
+  private analyzeCommonStrategies(sessions: Session[]): string[] {
+    const strategies: string[] = [];
+    const readinessStats: Record<string, number> = { joined: 0, ready: 0 };
 
     sessions.forEach((session) => {
       session.players?.forEach((player) => {
-        const duration = session.endTime
-          ? (session.endTime.getTime() - session.startTime.getTime()) /
-            (1000 * 60)
-          : 0;
-        engagement[player.name] = (engagement[player.name] || 0) + duration;
+        const participant = player.gameParticipants?.find(
+          (p) => p.game.id === session.currentGame?.id
+        );
+        if (participant) {
+          readinessStats[participant.status]++;
+        }
       });
     });
 
-    return engagement;
-  }
-
-  private analyzeTimeDistribution(sessions: Session[]): Record<string, number> {
-    const distribution: Record<string, number> = {
-      morning: 0,
-      afternoon: 0,
-      evening: 0,
-      night: 0,
-    };
-
-    sessions.forEach((session) => {
-      if (session.startTime) {
-        const hour = session.startTime.getHours();
-        if (hour >= 5 && hour < 12) distribution.morning++;
-        else if (hour >= 12 && hour < 17) distribution.afternoon++;
-        else if (hour >= 17 && hour < 22) distribution.evening++;
-        else distribution.night++;
-      }
-    });
-
-    const total = Object.values(distribution).reduce(
-      (sum, count) => sum + count,
-      0,
-    );
+    const total = readinessStats.joined + readinessStats.ready;
     if (total > 0) {
-      Object.keys(distribution).forEach((time) => {
-        distribution[time] = distribution[time] / total;
-      });
+      const readyPercentage = (readinessStats.ready / total) * 100;
+      strategies.push(`Player Readiness: ${readyPercentage.toFixed(1)}% ready`);
     }
 
-    return distribution;
+    return strategies;
   }
 }

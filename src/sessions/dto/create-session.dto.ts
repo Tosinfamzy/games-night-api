@@ -26,16 +26,24 @@ export class CreateSessionDto {
   gameIds?: number[];
 
   @ApiProperty({
-    description: 'Name of the game session',
+    description: 'Name of the session',
     example: 'Friday Night Games',
-    minLength: 3,
-    maxLength: 100,
+    minLength: 2,
+    maxLength: 50,
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(100)
+  @MinLength(2)
+  @MaxLength(50)
   sessionName: string;
+
+  @ApiProperty({
+    description: 'ID of the host player creating the session',
+    example: 1,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  hostId: number;
 
   @ApiProperty({
     description: 'Whether the session is currently active',

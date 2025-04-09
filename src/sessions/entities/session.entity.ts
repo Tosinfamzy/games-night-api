@@ -32,6 +32,13 @@ export class Session {
   id: number;
 
   @ApiProperty({
+    description: 'ID of the host who created this session',
+    example: 1,
+  })
+  @Column({ nullable: true })
+  hostId: number;
+
+  @ApiProperty({
     description: 'Name of the session',
     example: 'Friday Night Games',
   })
@@ -104,15 +111,6 @@ export class Session {
   })
   @Column({ nullable: true })
   winner: string;
-
-  @ApiProperty({
-    description: 'Difficulty level of the session',
-    example: 'medium',
-    enum: ['easy', 'medium', 'hard'],
-    required: false,
-  })
-  @Column({ nullable: true })
-  difficulty: 'easy' | 'medium' | 'hard';
 
   @ApiProperty({
     description: 'When the session was created',

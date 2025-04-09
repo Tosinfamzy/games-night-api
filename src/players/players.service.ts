@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Player } from './entities/player.entity';
+import { Player, PlayerType } from './entities/player.entity';
 import { Session } from 'src/sessions/entities/session.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateHostPlayerDto } from './dto/create-host-player.dto';
 
 @Injectable()
 export class PlayersService {
@@ -13,13 +14,17 @@ export class PlayersService {
     private sessionRepository: Repository<Session>,
   ) {}
 
-  async addPlayer(sessionId: number, name: string): Promise<Player> {
+  async addPlayer(
+    sessionId: number, 
+    name: string, 
+    type: PlayerType = PlayerType.PARTICIPANT
+  ): Promise<Player> {
     const session = await this.sessionRepository.findOne({
       where: { id: sessionId },
     });
     if (!session) throw new NotFoundException('Session not found');
 
-    const player = this.playerRepository.create({ name, session });
+    const player = this.playerRepository.create({ name, session, type });
     return this.playerRepository.save(player);
   }
 
@@ -35,5 +40,25 @@ export class PlayersService {
   async remove(id: number): Promise<void> {
     const player = await this.findOne(id);
     await this.playerRepository.remove(player);
+  }
+
+  async createHost(createHostPlayerDto: CreateHostPlayerDto): Promise<Player> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: Number(createHostPlayerDto.sessionId) },
+    });
+
+    if (!session) {
+      throw new NotFoundException(
+        `Session with ID ${createHostPlayerDto.sessionId} not found`,
+      );
+    }
+
+    const host = this.playerRepository.create({
+      name: createHostPlayerDto.name,
+      type: PlayerType.HOST,
+      session,
+    });
+
+    return this.playerRepository.save(host);
   }
 }

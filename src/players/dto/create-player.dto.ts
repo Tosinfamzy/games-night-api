@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, MaxLength, IsEnum, IsOptional } from 'class-validator';
+import { PlayerType } from '../entities/player.entity';
 
 export class CreatePlayerDto {
   @ApiProperty({
@@ -13,4 +14,14 @@ export class CreatePlayerDto {
   @MinLength(2)
   @MaxLength(50)
   name: string;
+
+  @ApiProperty({
+    description: 'Type of player (host or participant)',
+    enum: PlayerType,
+    example: PlayerType.PARTICIPANT,
+    required: false,
+  })
+  @IsEnum(PlayerType)
+  @IsOptional()
+  type?: PlayerType;
 }

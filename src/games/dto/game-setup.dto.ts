@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsObject, ValidateNested } from 'class-validator';
 
 export class GameSetupDto {
   @ApiProperty({
@@ -10,11 +10,10 @@ export class GameSetupDto {
   totalRounds: number;
 
   @ApiProperty({
-    description: 'Additional game configuration in JSON format',
-    example: { timeLimit: 60, difficulty: 'medium' },
-    required: false,
+    description: 'Game setup configuration',
+    example: { timeLimit: 60 },
   })
-  @IsOptional()
-  @IsString()
-  config?: string;
+  @IsObject()
+  @ValidateNested()
+  setup: Record<string, any>;
 }

@@ -50,8 +50,7 @@ export class GameAnalytics {
     description: 'Detailed statistics in JSON format',
     example: {
       winRates: { 'Player 1': 0.6, 'Player 2': 0.4 },
-      commonStrategies: ['Aggressive', 'Defensive'],
-      difficultyLevels: { easy: 0.3, medium: 0.5, hard: 0.2 },
+      commonStrategies: ['Aggressive', 'Defensive']
     },
   })
   @Column('jsonb', { default: {} })
