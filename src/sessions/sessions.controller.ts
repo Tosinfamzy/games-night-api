@@ -10,6 +10,7 @@ import {
   HttpCode,
   Put,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -69,7 +70,15 @@ export class SessionsController {
     description: 'Only hosts can view sessions',
   })
   findAll(@Query('hostId') hostId: string): Promise<Session[]> {
-    return this.sessionsService.findAll(+hostId);
+    if (!hostId) {
+      throw new BadRequestException('hostId parameter is required');
+    }
+
+    const parsedId = parseInt(hostId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.findAll(parsedId);
   }
 
   @Get(':id')
@@ -98,7 +107,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    return this.sessionsService.findOne(+id, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.findOne(parsedId, parsedHostId);
   }
 
   @Get(':id/players')
@@ -127,7 +144,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Player[]> {
-    const session = await this.sessionsService.findOne(+id, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    const session = await this.sessionsService.findOne(parsedId, parsedHostId);
     return session.players;
   }
 
@@ -151,7 +176,11 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() updateSessionDto: UpdateSessionDto,
   ): Promise<Session> {
-    return this.sessionsService.update(+id, updateSessionDto);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    return this.sessionsService.update(parsedId, updateSessionDto);
   }
 
   @Delete(':id')
@@ -180,7 +209,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<void> {
-    return this.sessionsService.remove(+id, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.remove(parsedId, parsedHostId);
   }
 
   @Post(':id/players')
@@ -199,7 +236,11 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() assignPlayersDto: AssignPlayersDto,
   ): Promise<Session> {
-    return this.sessionsService.assignPlayers(+id, assignPlayersDto);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    return this.sessionsService.assignPlayers(parsedId, assignPlayersDto);
   }
 
   @Post(':id/teams/random')
@@ -233,7 +274,19 @@ export class SessionsController {
     @Body('numberOfTeams') numberOfTeams: number,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    return this.sessionsService.createRandomTeams(+id, numberOfTeams, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.createRandomTeams(
+      parsedId,
+      numberOfTeams,
+      parsedHostId,
+    );
   }
 
   @Post(':id/teams/custom')
@@ -267,7 +320,19 @@ export class SessionsController {
     @Body('teams') teams: { teamName: string; playerIds: number[] }[],
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    return this.sessionsService.createCustomTeams(+id, teams, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.createCustomTeams(
+      parsedId,
+      teams,
+      parsedHostId,
+    );
   }
 
   @Post(':id/start')
@@ -295,7 +360,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    return this.sessionsService.startSession(+id, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.startSession(parsedId, parsedHostId);
   }
 
   @Post(':id/end')
@@ -323,7 +396,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    return this.sessionsService.endSession(+id, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.endSession(parsedId, parsedHostId);
   }
 
   @Post(':id/next-game')
@@ -351,7 +432,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    return this.sessionsService.moveToNextGame(+id, +hostId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedHostId = parseInt(hostId, 10);
+    if (isNaN(parsedHostId)) {
+      throw new BadRequestException('hostId must be a valid number');
+    }
+    return this.sessionsService.moveToNextGame(parsedId, parsedHostId);
   }
 
   @Put('teams/:id/players')
@@ -362,7 +451,11 @@ export class SessionsController {
     description: 'Player added to team successfully',
   })
   addPlayerToTeam(@Param('id') id: string, @Body() body: { playerId: number }) {
-    return this.sessionsService.addPlayerToTeam(+id, body.playerId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    return this.sessionsService.addPlayerToTeam(parsedId, body.playerId);
   }
 
   @Delete('teams/:id/players/:playerId')
@@ -377,7 +470,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Param('playerId') playerId: string,
   ) {
-    return this.sessionsService.removePlayerFromTeam(+id, +playerId);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    const parsedPlayerId = parseInt(playerId, 10);
+    if (isNaN(parsedPlayerId)) {
+      throw new BadRequestException('playerId must be a valid number');
+    }
+    return this.sessionsService.removePlayerFromTeam(parsedId, parsedPlayerId);
   }
 
   @Post(':id/games')
@@ -400,6 +501,10 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() addGamesDto: AddGamesDto,
   ): Promise<Session> {
-    return this.sessionsService.addGames(+id, addGamesDto);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('id must be a valid number');
+    }
+    return this.sessionsService.addGames(parsedId, addGamesDto);
   }
 }

@@ -6,6 +6,7 @@ import {
   Param,
   HttpStatus,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { GameRulesService } from './game-rules.service';
@@ -33,7 +34,11 @@ export class GameRulesController {
     @Param('gameId') gameId: string,
     @Body() createGameRulesDto: CreateGameRulesDto,
   ): Promise<GameRules> {
-    return this.gameRulesService.create(+gameId, createGameRulesDto);
+    const parsedId = parseInt(gameId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('gameId must be a valid number');
+    }
+    return this.gameRulesService.create(parsedId, createGameRulesDto);
   }
 
   @Get()
@@ -45,7 +50,11 @@ export class GameRulesController {
     type: [GameRules],
   })
   async findAll(@Param('gameId') gameId: string): Promise<GameRules[]> {
-    return this.gameRulesService.findAll(+gameId);
+    const parsedId = parseInt(gameId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('gameId must be a valid number');
+    }
+    return this.gameRulesService.findAll(parsedId);
   }
 
   @Get('active')
@@ -61,7 +70,11 @@ export class GameRulesController {
     description: 'No active rules found',
   })
   async findActive(@Param('gameId') gameId: string): Promise<GameRules> {
-    return this.gameRulesService.findActive(+gameId);
+    const parsedId = parseInt(gameId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('gameId must be a valid number');
+    }
+    return this.gameRulesService.findActive(parsedId);
   }
 
   @Get(':version')
@@ -81,7 +94,11 @@ export class GameRulesController {
     @Param('gameId') gameId: string,
     @Param('version') version: string,
   ): Promise<GameRules> {
-    return this.gameRulesService.findOne(+gameId, version);
+    const parsedId = parseInt(gameId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('gameId must be a valid number');
+    }
+    return this.gameRulesService.findOne(parsedId, version);
   }
 
   @Post(':version/activate')
@@ -102,7 +119,11 @@ export class GameRulesController {
     @Param('gameId') gameId: string,
     @Param('version') version: string,
   ): Promise<GameRules> {
-    return this.gameRulesService.setActive(+gameId, version);
+    const parsedId = parseInt(gameId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('gameId must be a valid number');
+    }
+    return this.gameRulesService.setActive(parsedId, version);
   }
 
   @Get(':version1/compare/:version2')
@@ -124,6 +145,10 @@ export class GameRulesController {
     @Param('version1') version1: string,
     @Param('version2') version2: string,
   ) {
-    return this.gameRulesService.compareVersions(+gameId, version1, version2);
+    const parsedId = parseInt(gameId, 10);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException('gameId must be a valid number');
+    }
+    return this.gameRulesService.compareVersions(parsedId, version1, version2);
   }
 }
