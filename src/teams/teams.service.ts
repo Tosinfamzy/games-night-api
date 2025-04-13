@@ -13,7 +13,7 @@ export class TeamsService {
     private sessionRepository: Repository<Session>,
   ) {}
 
-  async createTeam(sessionId: number, name: string): Promise<Team> {
+  async createTeam(sessionId: string, name: string): Promise<Team> {
     const session = await this.sessionRepository.findOne({
       where: { id: sessionId },
     });

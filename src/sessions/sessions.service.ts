@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -30,9 +31,43 @@ export class SessionsService {
     private readonly sessionsGateway: SessionsGateway,
   ) {}
 
+  private generateJoinCode(): string {
+    // Generate a 6-character alphanumeric code
+    // Excluding ambiguous characters like 0, O, 1, I, etc.
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
+    }
+    return result;
+  }
+
+  private async createUniqueJoinCode(): Promise<string> {
+    let joinCode: string;
+    let existingSession: Session;
+
+    // Try up to 10 times to create a unique code
+    for (let i = 0; i < 10; i++) {
+      joinCode = this.generateJoinCode();
+      existingSession = await this.sessionRepository.findOne({
+        where: { joinCode },
+      });
+
+      if (!existingSession) {
+        return joinCode;
+      }
+    }
+
+    throw new ConflictException(
+      'Failed to generate a unique join code. Please try again.',
+    );
+  }
+
   async create(createSessionDto: CreateSessionDto): Promise<Session> {
     const host = await this.playerRepository.findOne({
-      where: { id: createSessionDto.hostId }
+      where: { id: createSessionDto.hostId },
     });
 
     if (!host) {
@@ -43,12 +78,15 @@ export class SessionsService {
       throw new ForbiddenException('Only hosts can create sessions');
     }
 
+    const joinCode = await this.createUniqueJoinCode();
+
     const session = this.sessionRepository.create({
       sessionName: createSessionDto.sessionName,
       players: [host],
       hostId: host.id,
       isActive: true,
-      status: SessionStatus.PENDING
+      status: SessionStatus.PENDING,
+      joinCode,
     });
 
     if (createSessionDto.gameIds) {
@@ -68,9 +106,12 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  private async validateHostAccess(sessionId: number, hostId: number): Promise<void> {
+  private async validateHostAccess(
+    sessionId: string,
+    hostId: number,
+  ): Promise<void> {
     const session = await this.sessionRepository.findOne({
-      where: { id: sessionId }
+      where: { id: sessionId },
     });
 
     if (!session) {
@@ -84,7 +125,7 @@ export class SessionsService {
 
   async findAll(hostId: number): Promise<Session[]> {
     const host = await this.playerRepository.findOne({
-      where: { id: hostId }
+      where: { id: hostId },
     });
 
     if (!host) {
@@ -101,9 +142,9 @@ export class SessionsService {
     });
   }
 
-  async findOne(id: number, hostId: number): Promise<Session> {
+  async findOne(id: string, hostId: number): Promise<Session> {
     const host = await this.playerRepository.findOne({
-      where: { id: hostId }
+      where: { id: hostId },
     });
 
     if (!host) {
@@ -126,7 +167,7 @@ export class SessionsService {
     return session;
   }
 
-  async addGames(id: number, addGamesDto: AddGamesDto): Promise<Session> {
+  async addGames(id: string, addGamesDto: AddGamesDto): Promise<Session> {
     const session = await this.findOne(id, addGamesDto.hostId);
 
     if (session.status !== SessionStatus.PENDING) {
@@ -148,7 +189,10 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async update(id: number, updateSessionDto: UpdateSessionDto): Promise<Session> {
+  async update(
+    id: string,
+    updateSessionDto: UpdateSessionDto,
+  ): Promise<Session> {
     await this.findOne(id, updateSessionDto.hostId);
     const session = await this.sessionRepository.preload({
       id,
@@ -157,12 +201,15 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async remove(id: number, hostId: number): Promise<void> {
+  async remove(id: string, hostId: number): Promise<void> {
     const session = await this.findOne(id, hostId);
     await this.sessionRepository.remove(session);
   }
 
-  async assignPlayers(id: number, assignPlayersDto: AssignPlayersDto): Promise<Session> {
+  async assignPlayers(
+    id: string,
+    assignPlayersDto: AssignPlayersDto,
+  ): Promise<Session> {
     const session = await this.findOne(id, assignPlayersDto.hostId);
 
     const newPlayers = await Promise.all(
@@ -179,7 +226,11 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async createRandomTeams(id: number, numberOfTeams: number, hostId: number): Promise<Session> {
+  async createRandomTeams(
+    id: string,
+    numberOfTeams: number,
+    hostId: number,
+  ): Promise<Session> {
     const session = await this.findOne(id, hostId);
 
     if (!session.players || session.players.length === 0) {
@@ -196,7 +247,9 @@ export class SessionsService {
     }
 
     // Shuffle players
-    const shuffledPlayers = [...session.players].sort(() => Math.random() - 0.5);
+    const shuffledPlayers = [...session.players].sort(
+      () => Math.random() - 0.5,
+    );
     const playersPerTeam = Math.floor(session.players.length / numberOfTeams);
     const extraPlayers = session.players.length % numberOfTeams;
 
@@ -205,7 +258,10 @@ export class SessionsService {
 
     for (let i = 0; i < numberOfTeams; i++) {
       const teamSize = i < extraPlayers ? playersPerTeam + 1 : playersPerTeam;
-      const teamPlayers = shuffledPlayers.slice(playerIndex, playerIndex + teamSize);
+      const teamPlayers = shuffledPlayers.slice(
+        playerIndex,
+        playerIndex + teamSize,
+      );
       playerIndex += teamSize;
 
       const team = this.teamRepository.create({
@@ -221,7 +277,7 @@ export class SessionsService {
   }
 
   async createCustomTeams(
-    id: number,
+    id: string,
     teams: { teamName: string; playerIds: number[] }[],
     hostId: number,
   ): Promise<Session> {
@@ -254,7 +310,7 @@ export class SessionsService {
     return this.sessionRepository.save(session);
   }
 
-  async startSession(id: number, hostId: number): Promise<Session> {
+  async startSession(id: string, hostId: number): Promise<Session> {
     const session = await this.findOne(id, hostId);
 
     if (session.status !== SessionStatus.PENDING) {
@@ -283,7 +339,7 @@ export class SessionsService {
     return updatedSession;
   }
 
-  async endSession(id: number, hostId: number): Promise<Session> {
+  async endSession(id: string, hostId: number): Promise<Session> {
     const session = await this.findOne(id, hostId);
 
     if (session.status === SessionStatus.COMPLETED) {
@@ -301,7 +357,7 @@ export class SessionsService {
     return updatedSession;
   }
 
-  async moveToNextGame(id: number, hostId: number): Promise<Session> {
+  async moveToNextGame(id: string, hostId: number): Promise<Session> {
     const session = await this.findOne(id, hostId);
 
     if (session.status !== SessionStatus.IN_PROGRESS) {
@@ -383,5 +439,69 @@ export class SessionsService {
     });
 
     return updatedTeam;
+  }
+
+  async joinSessionByCode(
+    joinCode: string,
+    playerId: number,
+  ): Promise<Session> {
+    const player = await this.playerRepository.findOne({
+      where: { id: playerId },
+    });
+
+    if (!player) {
+      throw new NotFoundException('Player not found');
+    }
+
+    const session = await this.sessionRepository.findOne({
+      where: { joinCode, isActive: true },
+      relations: ['players'],
+    });
+
+    if (!session) {
+      throw new NotFoundException(
+        'Active session with this join code not found',
+      );
+    }
+
+    if (session.status === SessionStatus.COMPLETED) {
+      throw new BadRequestException('Cannot join a completed session');
+    }
+
+    // Check if player is already in the session
+    const isPlayerInSession = session.players.some((p) => p.id === player.id);
+    if (isPlayerInSession) {
+      throw new BadRequestException('Player is already in this session');
+    }
+
+    // Add player to session
+    player.session = session;
+    await this.playerRepository.save(player);
+
+    this.sessionsGateway.notifySessionUpdate(session.id, 'playerJoined', {
+      playerId: player.id,
+      playerName: player.name,
+    });
+
+    // Refresh session data
+    return this.sessionRepository.findOne({
+      where: { id: session.id },
+      relations: ['games', 'players', 'teams', 'teams.players'],
+    });
+  }
+
+  async findSessionByCode(joinCode: string): Promise<Session> {
+    const session = await this.sessionRepository.findOne({
+      where: { joinCode, isActive: true },
+      select: ['id', 'sessionName', 'hostId', 'status', 'joinCode'],
+    });
+
+    if (!session) {
+      throw new NotFoundException(
+        'Active session with this join code not found',
+      );
+    }
+
+    return session;
   }
 }

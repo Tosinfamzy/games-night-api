@@ -65,7 +65,7 @@ export class ScoringService {
     return score;
   }
 
-  async getGameLeaderboard(sessionId: number, gameId: number) {
+  async getGameLeaderboard(sessionId: string, gameId: number) {
     return this.scoreRepository
       .createQueryBuilder('score')
       .leftJoinAndSelect('score.player', 'player')
@@ -82,7 +82,7 @@ export class ScoringService {
       .getRawMany();
   }
 
-  async getSessionAggregatedScores(sessionId: number) {
+  async getSessionAggregatedScores(sessionId: string) {
     const session = await this.sessionRepository.findOne({
       where: { id: sessionId },
       relations: ['games'],

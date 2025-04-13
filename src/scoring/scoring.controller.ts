@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, BadRequestException } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -50,13 +50,16 @@ export class ScoringController {
     status: 200,
     description: 'Returned game leaderboard successfully',
   })
-  @ApiParam({ name: 'sessionId', description: 'The session ID', type: Number })
+  @ApiParam({ name: 'sessionId', description: 'The session ID (UUID)', type: String })
   @ApiParam({ name: 'gameId', description: 'The game ID', type: Number })
   @Get('/leaderboard/:sessionId/:gameId')
   async getGameLeaderboard(
-    @Param('sessionId') sessionId: number,
+    @Param('sessionId') sessionId: string,
     @Param('gameId') gameId: number,
   ) {
+    if (!this.isValidUuid(sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
     return this.scoringService.getGameLeaderboard(sessionId, gameId);
   }
 
@@ -65,18 +68,30 @@ export class ScoringController {
     status: 200,
     description: 'Returned session aggregated scores successfully',
   })
-  @ApiParam({ name: 'sessionId', description: 'The session ID', type: Number })
+  @ApiParam({ name: 'sessionId', description: 'The session ID (UUID)', type: String })
   @Get('/session/:sessionId')
-  async getSessionAggregatedScores(@Param('sessionId') sessionId: number) {
+  async getSessionAggregatedScores(@Param('sessionId') sessionId: string) {
+    if (!this.isValidUuid(sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
     return this.scoringService.getSessionAggregatedScores(sessionId);
   }
 
   @ApiOperation({ summary: 'Subscribe to session updates' })
   @ApiResponse({ status: 200, description: 'Subscribed successfully' })
-  @ApiParam({ name: 'sessionId', description: 'The session ID', type: Number })
+  @ApiParam({ name: 'sessionId', description: 'The session ID (UUID)', type: String })
   @Get('/subscribe/:sessionId')
-  subscribe(@Param('sessionId') sessionId: number) {
+  subscribe(@Param('sessionId') sessionId: string) {
+    if (!this.isValidUuid(sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
     this.scoreGateway.notifyScoreUpdate(sessionId);
     return { message: `Subscribed to session ${sessionId}` };
+  }
+  
+  // Helper method to validate UUID format
+  private isValidUuid(uuid: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 }

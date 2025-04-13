@@ -25,7 +25,7 @@ class PlayerDto {
 
 export class AssignPlayersDto {
   @ApiProperty({
-    description: 'ID of the host who owns this session',
+    description: 'ID of the host player',
     example: 1,
   })
   @IsNumber()

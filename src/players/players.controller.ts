@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -41,7 +42,7 @@ export class PlayersController {
       example1: {
         value: {
           name: 'John Doe',
-          sessionId: 1,
+          sessionId: '123e4567-e89b-12d3-a456-426614174000',
           type: PlayerType.PARTICIPANT,
         },
         description: 'Example of adding a new participant',
@@ -49,14 +50,17 @@ export class PlayersController {
       example2: {
         value: {
           name: 'Jane Host',
-          sessionId: 1,
+          sessionId: '123e4567-e89b-12d3-a456-426614174000',
           type: PlayerType.HOST,
         },
         description: 'Example of adding a host',
       },
     },
   })
-  async addPlayer(@Body() body: { sessionId: number; name: string; type?: PlayerType }) {
+  async addPlayer(@Body() body: { sessionId: string; name: string; type?: PlayerType }) {
+    if (!this.isValidUuid(body.sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
     return this.playerService.addPlayer(body.sessionId, body.name, body.type);
   }
 
@@ -105,5 +109,11 @@ export class PlayersController {
   })
   async removePlayer(@Param('id') id: string) {
     return this.playerService.remove(+id);
+  }
+  
+  // Helper method to validate UUID format
+  private isValidUuid(uuid: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 }

@@ -27,6 +27,8 @@ import { AssignPlayersDto } from './dto/assign-players.dto';
 import { Session } from './entities/session.entity';
 import { AddGamesDto } from './dto/add-games.dto';
 import { Player } from '../players/entities/player.entity';
+import { JoinSessionDto } from './dto/join-session.dto';
+import { LookupSessionDto } from './dto/lookup-session.dto';
 
 @ApiTags('sessions')
 @Controller('sessions')
@@ -83,7 +85,7 @@ export class SessionsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a session by ID' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -107,20 +109,20 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.findOne(parsedId, parsedHostId);
+    return this.sessionsService.findOne(id, parsedHostId);
   }
 
   @Get(':id/players')
   @ApiOperation({ summary: 'Get all players in a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -144,21 +146,21 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Player[]> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    const session = await this.sessionsService.findOne(parsedId, parsedHostId);
+    const session = await this.sessionsService.findOne(id, parsedHostId);
     return session.players;
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update session details' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Session updated successfully',
@@ -176,17 +178,16 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() updateSessionDto: UpdateSessionDto,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
-    return this.sessionsService.update(parsedId, updateSessionDto);
+    return this.sessionsService.update(id, updateSessionDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete/End a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -209,20 +210,20 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<void> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.remove(parsedId, parsedHostId);
+    return this.sessionsService.remove(id, parsedHostId);
   }
 
   @Post(':id/players')
   @ApiOperation({ summary: 'Assign players to a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Players assigned successfully',
@@ -236,16 +237,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() assignPlayersDto: AssignPlayersDto,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
-    return this.sessionsService.assignPlayers(parsedId, assignPlayersDto);
+    return this.sessionsService.assignPlayers(id, assignPlayersDto);
   }
 
   @Post(':id/teams/random')
   @ApiOperation({ summary: 'Create random teams in a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -274,16 +274,16 @@ export class SessionsController {
     @Body('numberOfTeams') numberOfTeams: number,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
     return this.sessionsService.createRandomTeams(
-      parsedId,
+      id,
       numberOfTeams,
       parsedHostId,
     );
@@ -291,7 +291,7 @@ export class SessionsController {
 
   @Post(':id/teams/custom')
   @ApiOperation({ summary: 'Create custom teams in a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -320,16 +320,16 @@ export class SessionsController {
     @Body('teams') teams: { teamName: string; playerIds: number[] }[],
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
     return this.sessionsService.createCustomTeams(
-      parsedId,
+      id,
       teams,
       parsedHostId,
     );
@@ -337,7 +337,7 @@ export class SessionsController {
 
   @Post(':id/start')
   @ApiOperation({ summary: 'Start a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -360,20 +360,20 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.startSession(parsedId, parsedHostId);
+    return this.sessionsService.startSession(id, parsedHostId);
   }
 
   @Post(':id/end')
   @ApiOperation({ summary: 'End a session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -396,20 +396,20 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.endSession(parsedId, parsedHostId);
+    return this.sessionsService.endSession(id, parsedHostId);
   }
 
   @Post(':id/next-game')
   @ApiOperation({ summary: 'Move to the next game in the session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
     description: 'ID of the host',
@@ -432,15 +432,15 @@ export class SessionsController {
     @Param('id') id: string,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
+
     const parsedHostId = parseInt(hostId, 10);
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.moveToNextGame(parsedId, parsedHostId);
+    return this.sessionsService.moveToNextGame(id, parsedHostId);
   }
 
   @Put('teams/:id/players')
@@ -483,7 +483,7 @@ export class SessionsController {
 
   @Post(':id/games')
   @ApiOperation({ summary: 'Add games to an existing session' })
-  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Games added successfully',
@@ -501,10 +501,55 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() addGamesDto: AddGamesDto,
   ): Promise<Session> {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      throw new BadRequestException('id must be a valid number');
+    if (!this.isValidUuid(id)) {
+      throw new BadRequestException('id must be a valid UUID');
     }
-    return this.sessionsService.addGames(parsedId, addGamesDto);
+    return this.sessionsService.addGames(id, addGamesDto);
+  }
+
+  @Post('join')
+  @ApiOperation({ summary: 'Join an existing session using a join code' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully joined the session',
+    type: Session,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Session not found or player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'Cannot join a completed session or player is already in this session',
+  })
+  async joinSession(@Body() joinSessionDto: JoinSessionDto): Promise<Session> {
+    return this.sessionsService.joinSessionByCode(
+      joinSessionDto.joinCode,
+      joinSessionDto.playerId,
+    );
+  }
+
+  @Post('lookup')
+  @ApiOperation({ summary: 'Look up a session by join code without joining' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Session found',
+    type: Session,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'No active session found with this join code',
+  })
+  async lookupSession(
+    @Body() lookupSessionDto: LookupSessionDto,
+  ): Promise<Session> {
+    return this.sessionsService.findSessionByCode(lookupSessionDto.joinCode);
+  }
+
+  private isValidUuid(uuid: string): boolean {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 }

@@ -15,7 +15,7 @@ export class PlayersService {
   ) {}
 
   async addPlayer(
-    sessionId: number, 
+    sessionId: string, 
     name: string, 
     type: PlayerType = PlayerType.PARTICIPANT
   ): Promise<Player> {
@@ -43,20 +43,9 @@ export class PlayersService {
   }
 
   async createHost(createHostPlayerDto: CreateHostPlayerDto): Promise<Player> {
-    const session = await this.sessionRepository.findOne({
-      where: { id: Number(createHostPlayerDto.sessionId) },
-    });
-
-    if (!session) {
-      throw new NotFoundException(
-        `Session with ID ${createHostPlayerDto.sessionId} not found`,
-      );
-    }
-
     const host = this.playerRepository.create({
       name: createHostPlayerDto.name,
       type: PlayerType.HOST,
-      session,
     });
 
     return this.playerRepository.save(host);

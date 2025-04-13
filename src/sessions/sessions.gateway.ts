@@ -20,7 +20,7 @@ export class SessionsGateway {
 
   @SubscribeMessage('joinSession')
   handleJoinSession(
-    @MessageBody() sessionId: number,
+    @MessageBody() sessionId: string,
     @ConnectedSocket() client: Socket,
   ) {
     client.join(`session_${sessionId}`);
@@ -29,14 +29,14 @@ export class SessionsGateway {
 
   @SubscribeMessage('leaveSession')
   handleLeaveSession(
-    @MessageBody() sessionId: number,
+    @MessageBody() sessionId: string,
     @ConnectedSocket() client: Socket,
   ) {
     client.leave(`session_${sessionId}`);
     return { event: 'leftSession', data: sessionId };
   }
 
-  notifySessionUpdate(sessionId: number, updateType: string, data: any) {
+  notifySessionUpdate(sessionId: string, updateType: string, data: any) {
     this.server.to(`session_${sessionId}`).emit('sessionUpdate', {
       type: updateType,
       data,

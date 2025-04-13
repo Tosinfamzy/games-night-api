@@ -66,7 +66,7 @@ export class GamesService {
       name: string;
       status: ParticipantStatus;
       joinedAt: Date;
-      session: { id: number; sessionName: string };
+      session: { id: string; sessionName: string };
     }[];
     total: number;
   }> {

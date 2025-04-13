@@ -26,10 +26,10 @@ export enum SessionStatus {
 export class Session {
   @ApiProperty({
     description: 'Unique identifier of the session',
-    example: 1,
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ApiProperty({
     description: 'ID of the host who created this session',
@@ -51,6 +51,13 @@ export class Session {
   })
   @Column({ default: true })
   isActive: boolean;
+
+  @ApiProperty({
+    description: 'Unique join code for players to join this session',
+    example: 'ABC123',
+  })
+  @Column({ unique: true, nullable: true })
+  joinCode: string;
 
   @Column({
     type: 'enum',

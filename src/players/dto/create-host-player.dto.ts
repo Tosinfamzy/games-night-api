@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateHostPlayerDto {
   @ApiProperty({
@@ -12,11 +16,4 @@ export class CreateHostPlayerDto {
   @MinLength(2)
   @MaxLength(50)
   name: string;
-
-  @ApiProperty({
-    description: 'Session ID to create the host for',
-    example: 1,
-  })
-  @IsString()
-  sessionId: string;
-} 
+}
