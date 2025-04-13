@@ -328,11 +328,7 @@ export class SessionsController {
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.createCustomTeams(
-      id,
-      teams,
-      parsedHostId,
-    );
+    return this.sessionsService.createCustomTeams(id, teams, parsedHostId);
   }
 
   @Post(':id/start')

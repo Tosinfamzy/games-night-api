@@ -1,4 +1,9 @@
-import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  forwardRef,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Score } from './entities/scoring.entity';
@@ -25,7 +30,11 @@ export class ScoringService {
     private readonly scoreGateway: ScoreGateway,
   ) {}
 
-  async addPointsToPlayer(playerId: number, gameId: number, points: number): Promise<Score> {
+  async addPointsToPlayer(
+    playerId: number,
+    gameId: number,
+    points: number,
+  ): Promise<Score> {
     const player = await this.playerRepository.findOne({
       where: { id: playerId },
       relations: ['session'],
@@ -38,14 +47,23 @@ export class ScoringService {
     if (!game) throw new Error('Game not found');
 
     const session = player.session;
-    const score = this.scoreRepository.create({ player, session, game, points });
+    const score = this.scoreRepository.create({
+      player,
+      session,
+      game,
+      points,
+    });
     await this.scoreRepository.save(score);
 
     this.scoreGateway.notifyScoreUpdate(session.id);
     return score;
   }
 
-  async addPointsToTeam(teamId: number, gameId: number, points: number): Promise<Score> {
+  async addPointsToTeam(
+    teamId: number,
+    gameId: number,
+    points: number,
+  ): Promise<Score> {
     const team = await this.teamRepository.findOne({
       where: { id: teamId },
       relations: ['session'],
@@ -87,7 +105,8 @@ export class ScoringService {
       where: { id: sessionId },
       relations: ['games'],
     });
-    if (!session) throw new NotFoundException(`Session with ID ${sessionId} not found`);
+    if (!session)
+      throw new NotFoundException(`Session with ID ${sessionId} not found`);
 
     const playerScores = await this.scoreRepository
       .createQueryBuilder('score')

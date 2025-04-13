@@ -15,9 +15,9 @@ export class PlayersService {
   ) {}
 
   async addPlayer(
-    sessionId: string, 
-    name: string, 
-    type: PlayerType = PlayerType.PARTICIPANT
+    sessionId: string,
+    name: string,
+    type: PlayerType = PlayerType.PARTICIPANT,
   ): Promise<Player> {
     const session = await this.sessionRepository.findOne({
       where: { id: sessionId },

@@ -57,7 +57,9 @@ export class PlayersController {
       },
     },
   })
-  async addPlayer(@Body() body: { sessionId: string; name: string; type?: PlayerType }) {
+  async addPlayer(
+    @Body() body: { sessionId: string; name: string; type?: PlayerType },
+  ) {
     if (!this.isValidUuid(body.sessionId)) {
       throw new BadRequestException('sessionId must be a valid UUID');
     }
@@ -76,7 +78,9 @@ export class PlayersController {
     status: 404,
     description: 'Session not found.',
   })
-  createHost(@Body() createHostPlayerDto: CreateHostPlayerDto): Promise<Player> {
+  createHost(
+    @Body() createHostPlayerDto: CreateHostPlayerDto,
+  ): Promise<Player> {
     return this.playerService.createHost(createHostPlayerDto);
   }
 
@@ -110,10 +114,11 @@ export class PlayersController {
   async removePlayer(@Param('id') id: string) {
     return this.playerService.remove(+id);
   }
-  
+
   // Helper method to validate UUID format
   private isValidUuid(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
   }
 }

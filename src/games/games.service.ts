@@ -10,7 +10,10 @@ import { Game, GameState } from './entities/game.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameSetupDto } from './dto/game-setup.dto';
 import { PlayerReadyDto } from './dto/player-ready.dto';
-import { GameParticipant, ParticipantStatus } from './entities/game-participant.entity';
+import {
+  GameParticipant,
+  ParticipantStatus,
+} from './entities/game-participant.entity';
 import { Player } from '../players/entities/player.entity';
 
 @Injectable()
@@ -72,7 +75,11 @@ export class GamesService {
   }> {
     const game = await this.gameRepository.findOne({
       where: { id: gameId },
-      relations: ['participants', 'participants.player', 'participants.player.session'],
+      relations: [
+        'participants',
+        'participants.player',
+        'participants.player.session',
+      ],
     });
 
     if (!game) {
@@ -84,10 +91,12 @@ export class GamesService {
       name: participant.player.name,
       status: participant.status,
       joinedAt: participant.createdAt,
-      session: participant.player.session ? {
-        id: participant.player.session.id,
-        sessionName: participant.player.session.sessionName,
-      } : null,
+      session: participant.player.session
+        ? {
+            id: participant.player.session.id,
+            sessionName: participant.player.session.sessionName,
+          }
+        : null,
     }));
 
     return {
@@ -123,7 +132,10 @@ export class GamesService {
     return this.participantRepository.save(participant);
   }
 
-  async playerReady(gameId: number, playerId: number): Promise<GameParticipant> {
+  async playerReady(
+    gameId: number,
+    playerId: number,
+  ): Promise<GameParticipant> {
     const game = await this.findGameById(gameId);
     if (game.state !== GameState.READY) {
       throw new BadRequestException('Game is not in ready state');

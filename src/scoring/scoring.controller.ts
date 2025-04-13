@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, Param, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -29,7 +36,11 @@ export class ScoringController {
   @ApiBody({ type: PlayerScoreDto })
   @Post('/player')
   async addPointsToPlayer(@Body() body: PlayerScoreDto): Promise<Score> {
-    return this.scoringService.addPointsToPlayer(body.playerId, body.gameId, body.points);
+    return this.scoringService.addPointsToPlayer(
+      body.playerId,
+      body.gameId,
+      body.points,
+    );
   }
 
   @ApiOperation({ summary: 'Add points to a team in a specific game' })
@@ -42,7 +53,11 @@ export class ScoringController {
   @ApiBody({ type: TeamScoreDto })
   @Post('/team')
   async addPointsToTeam(@Body() body: TeamScoreDto): Promise<Score> {
-    return this.scoringService.addPointsToTeam(body.teamId, body.gameId, body.points);
+    return this.scoringService.addPointsToTeam(
+      body.teamId,
+      body.gameId,
+      body.points,
+    );
   }
 
   @ApiOperation({ summary: 'Get leaderboard for a specific game in a session' })
@@ -50,7 +65,11 @@ export class ScoringController {
     status: 200,
     description: 'Returned game leaderboard successfully',
   })
-  @ApiParam({ name: 'sessionId', description: 'The session ID (UUID)', type: String })
+  @ApiParam({
+    name: 'sessionId',
+    description: 'The session ID (UUID)',
+    type: String,
+  })
   @ApiParam({ name: 'gameId', description: 'The game ID', type: Number })
   @Get('/leaderboard/:sessionId/:gameId')
   async getGameLeaderboard(
@@ -68,7 +87,11 @@ export class ScoringController {
     status: 200,
     description: 'Returned session aggregated scores successfully',
   })
-  @ApiParam({ name: 'sessionId', description: 'The session ID (UUID)', type: String })
+  @ApiParam({
+    name: 'sessionId',
+    description: 'The session ID (UUID)',
+    type: String,
+  })
   @Get('/session/:sessionId')
   async getSessionAggregatedScores(@Param('sessionId') sessionId: string) {
     if (!this.isValidUuid(sessionId)) {
@@ -79,7 +102,11 @@ export class ScoringController {
 
   @ApiOperation({ summary: 'Subscribe to session updates' })
   @ApiResponse({ status: 200, description: 'Subscribed successfully' })
-  @ApiParam({ name: 'sessionId', description: 'The session ID (UUID)', type: String })
+  @ApiParam({
+    name: 'sessionId',
+    description: 'The session ID (UUID)',
+    type: String,
+  })
   @Get('/subscribe/:sessionId')
   subscribe(@Param('sessionId') sessionId: string) {
     if (!this.isValidUuid(sessionId)) {
@@ -88,10 +115,11 @@ export class ScoringController {
     this.scoreGateway.notifyScoreUpdate(sessionId);
     return { message: `Subscribed to session ${sessionId}` };
   }
-  
+
   // Helper method to validate UUID format
   private isValidUuid(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
   }
 }
