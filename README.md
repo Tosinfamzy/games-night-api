@@ -1,15 +1,22 @@
 # Games Night Backend
 
-A NestJS backend application for managing game sessions, players, teams, and scoring with versioned game rules.
+A NestJS backend application for managing game sessions, players, teams, scoring, analytics, and versioned game rules.
 
 ## Project Structure
 
 ```
 games-night-backend/
 ├── src/                      # Source code
+│   ├── analytics/           # Analytics module
+│   │   ├── entities/        # Analytics entities
+│   │   ├── analytics.controller.ts
+│   │   ├── analytics.module.ts
+│   │   └── analytics.service.ts
 │   ├── config/              # Configuration files
 │   │   └── data-source.ts   # Database configuration
 │   ├── database/            # Database related files
+│   │   ├── factories/      # Test data factories
+│   │   ├── migrations/     # Database migrations
 │   │   └── seeds/          # Database seeders
 │   ├── games/              # Games module
 │   │   ├── dto/           # Data Transfer Objects
@@ -19,6 +26,7 @@ games-night-backend/
 │   │   ├── games.service.ts
 │   │   └── game-rules.controller.ts
 │   ├── gateways/          # WebSocket gateways
+│   │   ├── gateway.module.ts
 │   │   ├── score.gateway.ts
 │   │   └── sessions.gateway.ts
 │   ├── players/           # Players module
@@ -37,6 +45,7 @@ games-night-backend/
 │   │   ├── dto/        # Data Transfer Objects
 │   │   ├── entities/   # Database entities
 │   │   ├── sessions.controller.ts
+│   │   ├── sessions.gateway.ts
 │   │   ├── sessions.module.ts
 │   │   └── sessions.service.ts
 │   ├── teams/          # Teams module
@@ -60,12 +69,13 @@ games-night-backend/
 
 ## Features
 
-- Game session management with multiple games per session
+- Game session management with multiple games per session (using UUID identifiers)
 - Player and team management
 - Real-time scoring with WebSocket support
 - Versioned game rules system
 - Game state management (SETUP, READY, IN_PROGRESS, COMPLETED)
 - Session state tracking (PENDING, IN_PROGRESS, COMPLETED)
+- Game analytics and statistics tracking
 - Swagger API documentation
 - TypeORM database integration
 - Input validation
@@ -97,16 +107,27 @@ games-night-backend/
    - Real-time score updates via WebSocket
 
 5. **Game Rules Versioning**
+
    - Create and manage multiple versions of game rules
    - Compare rule versions
    - Set active rule versions
    - Track rule changes over time
+
+6. **Analytics**
+   - Track game usage statistics
+   - Analyze player performance
+   - Monitor session metrics
+   - Generate reports on game popularity and engagement
 
 ## Prerequisites
 
 - Node.js (v14 or higher)
 - PostgreSQL
 - npm or yarn
+
+## Database Information
+
+The application uses PostgreSQL with TypeORM for database management. Session IDs have been migrated from integers to UUIDs to provide better scalability and security.
 
 ## Installation
 
