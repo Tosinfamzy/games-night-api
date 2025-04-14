@@ -83,37 +83,42 @@ games-night-backend/
 
 ## Game Flow
 
-1. **Session Creation**
+1. **Host Player Creation**
+
+   - Create a host player who will manage the session
+   - Host player serves as the administrator for the game night
+
+2. **Session Creation**
 
    - Create a new session with selected games
    - Configure session settings (difficulty, duration)
 
-2. **Player Management**
+3. **Player Management**
 
    - Add players to the session
    - Create teams and assign players
    - Track player ready status
 
-3. **Game Management**
+4. **Game Management**
 
    - Configure game rules and settings
    - Track game state and rounds
    - Manage game transitions
 
-4. **Scoring System**
+5. **Scoring System**
 
    - Track individual player scores
    - Track team scores
    - Real-time score updates via WebSocket
 
-5. **Game Rules Versioning**
+6. **Game Rules Versioning**
 
    - Create and manage multiple versions of game rules
    - Compare rule versions
    - Set active rule versions
    - Track rule changes over time
 
-6. **Analytics**
+7. **Analytics**
    - Track game usage statistics
    - Analyze player performance
    - Monitor session metrics
