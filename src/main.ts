@@ -6,13 +6,10 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable validation globally
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  // Enable CORS
   app.enableCors();
 
-  // Set up Swagger
   const config = new DocumentBuilder()
     .setTitle('Games Night API')
     .setDescription('API for managing game nights, players, teams, and scoring')

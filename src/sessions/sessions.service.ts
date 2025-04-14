@@ -32,8 +32,6 @@ export class SessionsService {
   ) {}
 
   private generateJoinCode(): string {
-    // Generate a 6-character alphanumeric code
-    // Excluding ambiguous characters like 0, O, 1, I, etc.
     const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let result = '';
     for (let i = 0; i < 6; i++) {
@@ -48,7 +46,6 @@ export class SessionsService {
     let joinCode: string;
     let existingSession: Session;
 
-    // Try up to 10 times to create a unique code
     for (let i = 0; i < 10; i++) {
       joinCode = this.generateJoinCode();
       existingSession = await this.sessionRepository.findOne({
@@ -184,7 +181,6 @@ export class SessionsService {
       );
     }
 
-    // Add new games to existing games
     session.games = [...(session.games || []), ...games];
     return this.sessionRepository.save(session);
   }
@@ -241,12 +237,10 @@ export class SessionsService {
       throw new BadRequestException('Invalid number of teams');
     }
 
-    // Clear existing teams
     if (session.teams) {
       await this.teamRepository.remove(session.teams);
     }
 
-    // Shuffle players
     const shuffledPlayers = [...session.players].sort(
       () => Math.random() - 0.5,
     );
@@ -283,7 +277,6 @@ export class SessionsService {
   ): Promise<Session> {
     const session = await this.findOne(id, hostId);
 
-    // Clear existing teams
     if (session.teams) {
       await this.teamRepository.remove(session.teams);
     }
@@ -468,13 +461,11 @@ export class SessionsService {
       throw new BadRequestException('Cannot join a completed session');
     }
 
-    // Check if player is already in the session
     const isPlayerInSession = session.players.some((p) => p.id === player.id);
     if (isPlayerInSession) {
       throw new BadRequestException('Player is already in this session');
     }
 
-    // Add player to session
     player.session = session;
     await this.playerRepository.save(player);
 
@@ -483,7 +474,6 @@ export class SessionsService {
       playerName: player.name,
     });
 
-    // Refresh session data
     return this.sessionRepository.findOne({
       where: { id: session.id },
       relations: ['games', 'players', 'teams', 'teams.players'],

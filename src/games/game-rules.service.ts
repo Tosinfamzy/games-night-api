@@ -27,7 +27,6 @@ export class GameRulesService {
       throw new NotFoundException(`Game with ID ${gameId} not found`);
     }
 
-    // If this is set as active, deactivate other versions
     if (createGameRulesDto.isActive) {
       await this.deactivateAllVersions(gameId);
     }

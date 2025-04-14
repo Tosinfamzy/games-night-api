@@ -115,7 +115,6 @@ export class GamesService {
       throw new NotFoundException(`Player with ID ${playerId} not found`);
     }
 
-    // Check if player is already in the game
     const existingParticipant = game.participants?.find(
       (p) => p.player.id === playerId,
     );

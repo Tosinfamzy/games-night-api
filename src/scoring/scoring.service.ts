@@ -140,7 +140,6 @@ export class ScoringService {
       .groupBy('team.id, team.name, game.id, game.name')
       .getRawMany();
 
-    // Calculate total scores across all games
     const playerTotalScores = playerScores.reduce((acc, score) => {
       if (!acc[score.playerId]) {
         acc[score.playerId] = {
