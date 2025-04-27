@@ -11,6 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { GameAnalytics } from '../../analytics/entities/game-analytics.entity';
 import { GameParticipant } from './game-participant.entity';
 import { Session } from '../../sessions/entities/session.entity';
+import { Rule } from './rule.entity';
 
 export enum GameState {
   SETUP = 'setup',
@@ -18,6 +19,13 @@ export enum GameState {
   IN_PROGRESS = 'in_progress',
   PAUSED = 'paused',
   COMPLETED = 'completed',
+}
+
+export enum GameType {
+  UNO = 'uno',
+  ARTICULATE = 'articulate',
+  CARDS_AGAINST_HUMANITY = 'cards_against_humanity',
+  BLACKJACK = 'blackjack',
 }
 
 @Entity()
@@ -29,17 +37,31 @@ export class Game {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ description: 'The name of the game', example: 'Charades' })
+  @ApiProperty({
+    description: 'The name of the game',
+    example: 'UNO',
+  })
   @Column()
   name: string;
 
   @ApiProperty({
-    description: 'Rules of the game',
-    example: 'Act out a word without speaking',
+    description: 'Type of game',
+    enum: GameType,
+    example: GameType.UNO,
+  })
+  @Column({
+    type: 'enum',
+    enum: GameType,
+  })
+  type: GameType;
+
+  @ApiProperty({
+    description: 'Description of the game',
+    example: 'A classic card game where players race to empty their hands',
     required: false,
   })
   @Column({ nullable: true })
-  rules: string;
+  description: string;
 
   @ApiProperty({
     description: 'Current state of the game',
@@ -82,6 +104,13 @@ export class Game {
   })
   @OneToMany(() => GameParticipant, (participant) => participant.game)
   participants: GameParticipant[];
+
+  @ApiProperty({
+    description: 'Rules available for this game',
+    type: () => [Rule],
+  })
+  @OneToMany(() => Rule, (rule) => rule.game)
+  rules: Rule[];
 
   @ApiProperty({
     description: 'Sessions this game belongs to',

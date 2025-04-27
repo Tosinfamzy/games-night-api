@@ -1,25 +1,43 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { GamesService } from './games.service';
-import { Game, GameState } from './entities/game.entity';
+import { Game, GameState, GameType } from './entities/game.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameSetupDto } from './dto/game-setup.dto';
 import { PlayerReadyDto } from './dto/player-ready.dto';
 import { AddPlayerDto } from './dto/add-player.dto';
-import { GameParticipant, ParticipantStatus } from './entities/game-participant.entity';
+import {
+  GameParticipant,
+  ParticipantStatus,
+} from './entities/game-participant.entity';
+import { Rule } from './entities/rule.entity';
+import { CreateRuleDto } from './dto/create-rule.dto';
 
 @ApiTags('games')
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
-  @ApiOperation({ summary: 'Get all games' })
+  @ApiOperation({
+    summary: 'Get all games',
+    description: 'Returns the predefined set of games with their rules',
+  })
   @ApiResponse({ status: 200, description: 'Return all games', type: [Game] })
   @Get()
   async findAll(): Promise<Game[]> {
@@ -30,7 +48,8 @@ export class GamesController {
   @ApiOperation({ summary: 'Get all players in a specific game' })
   @ApiResponse({
     status: 200,
-    description: 'Returns all players in the game with their status and session info',
+    description:
+      'Returns all players in the game with their status and session info',
     schema: {
       type: 'object',
       properties: {
@@ -41,24 +60,24 @@ export class GamesController {
             properties: {
               id: { type: 'number' },
               name: { type: 'string' },
-              status: { 
+              status: {
                 type: 'string',
-                enum: Object.values(ParticipantStatus)
+                enum: Object.values(ParticipantStatus),
               },
               joinedAt: { type: 'string', format: 'date-time' },
               session: {
                 type: 'object',
                 properties: {
                   id: { type: 'number' },
-                  sessionName: { type: 'string' }
-                }
-              }
-            }
-          }
+                  sessionName: { type: 'string' },
+                },
+              },
+            },
+          },
         },
-        total: { type: 'number' }
-      }
-    }
+        total: { type: 'number' },
+      },
+    },
   })
   @ApiParam({ name: 'id', description: 'Game ID' })
   async getGamePlayers(@Param('id') id: string) {
@@ -77,7 +96,7 @@ export class GamesController {
     description: 'Game creation data',
   })
   async create(@Body() createGameDto: CreateGameDto): Promise<Game> {
-    return this.gamesService.create(createGameDto.name, createGameDto.rules);
+    return this.gamesService.create(createGameDto);
   }
 
   @Put(':id/setup')
@@ -143,6 +162,7 @@ export class GamesController {
     return this.gamesService.removePlayer(+id, +playerId);
   }
 
+  @Post(':id/start')
   @ApiOperation({ summary: 'Start the game' })
   @ApiResponse({
     status: 200,
@@ -150,11 +170,11 @@ export class GamesController {
     type: Game,
   })
   @ApiParam({ name: 'id', description: 'Game ID' })
-  @Post(':id/start')
   async startGame(@Param('id') id: number): Promise<Game> {
     return this.gamesService.startGame(id);
   }
 
+  @Post(':id/complete')
   @ApiOperation({ summary: 'Complete the game' })
   @ApiResponse({
     status: 200,
@@ -162,11 +182,11 @@ export class GamesController {
     type: Game,
   })
   @ApiParam({ name: 'id', description: 'Game ID' })
-  @Post(':id/complete')
   async completeGame(@Param('id') id: number): Promise<Game> {
     return this.gamesService.completeGame(id);
   }
 
+  @Put(':id/state')
   @ApiOperation({ summary: 'Update game state' })
   @ApiResponse({
     status: 200,
@@ -174,11 +194,87 @@ export class GamesController {
     type: Game,
   })
   @ApiParam({ name: 'id', description: 'Game ID' })
-  @Put(':id/state')
   async updateGameState(
     @Param('id') id: number,
     @Body('state') state: GameState,
   ): Promise<Game> {
     return this.gamesService.updateGameState(id, state);
+  }
+
+  // Rules endpoints
+  @Get(':id/rules')
+  @ApiOperation({ summary: 'Get all rules for a game' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all rules for the game',
+    type: [Rule],
+  })
+  @ApiParam({ name: 'id', description: 'Game ID' })
+  async getGameRules(@Param('id') id: string): Promise<Rule[]> {
+    return this.gamesService.getRules(+id);
+  }
+
+  @Post(':id/rules')
+  @ApiOperation({ summary: 'Add a new rule to a game' })
+  @ApiResponse({
+    status: 201,
+    description: 'Rule added successfully',
+    type: Rule,
+  })
+  @ApiParam({ name: 'id', description: 'Game ID' })
+  @ApiBody({ type: CreateRuleDto })
+  async addRule(
+    @Param('id') id: string,
+    @Body() createRuleDto: CreateRuleDto,
+  ): Promise<Rule> {
+    return this.gamesService.addRule(+id, createRuleDto);
+  }
+
+  @Get('rules/:ruleId')
+  @ApiOperation({ summary: 'Get a specific rule' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the rule',
+    type: Rule,
+  })
+  @ApiParam({ name: 'ruleId', description: 'Rule ID' })
+  async getRule(@Param('ruleId') ruleId: string): Promise<Rule> {
+    return this.gamesService.getRule(+ruleId);
+  }
+
+  @Put('rules/:ruleId')
+  @ApiOperation({ summary: 'Update a rule' })
+  @ApiResponse({
+    status: 200,
+    description: 'Rule updated successfully',
+    type: Rule,
+  })
+  @ApiParam({ name: 'ruleId', description: 'Rule ID' })
+  async updateRule(
+    @Param('ruleId') ruleId: string,
+    @Body() updateData: Partial<Rule>,
+  ): Promise<Rule> {
+    return this.gamesService.updateRule(+ruleId, updateData);
+  }
+
+  @Delete('rules/:ruleId')
+  @ApiOperation({ summary: 'Delete a rule' })
+  @ApiResponse({
+    status: 200,
+    description: 'Rule deleted successfully',
+  })
+  @ApiParam({ name: 'ruleId', description: 'Rule ID' })
+  async deleteRule(@Param('ruleId') ruleId: string): Promise<void> {
+    return this.gamesService.deleteRule(+ruleId);
+  }
+
+  @Post('initialize-defaults')
+  @ApiOperation({ summary: 'Initialize default games and rules' })
+  @ApiResponse({
+    status: 200,
+    description: 'Default games and rules initialized',
+  })
+  async initializeDefaults(): Promise<void> {
+    return this.gamesService.initializeDefaultGamesAndRules();
   }
 }

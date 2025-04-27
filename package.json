@@ -24,7 +24,8 @@
     "migration:run": "npm run typeorm -- migration:run -d src/config/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/config/data-source.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
-    "seed:dev": "NODE_ENV=development npm run seed"
+    "seed:dev": "NODE_ENV=development npm run seed",
+    "seed:default-games": "ts-node -r tsconfig-paths/register src/database/seed-command.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.11",
