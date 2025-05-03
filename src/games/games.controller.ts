@@ -201,7 +201,6 @@ export class GamesController {
     return this.gamesService.updateGameState(id, state);
   }
 
-  // Rules endpoints
   @Get(':id/rules')
   @ApiOperation({ summary: 'Get all rules for a game' })
   @ApiResponse({

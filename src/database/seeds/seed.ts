@@ -12,10 +12,8 @@ import { createPlayerScore, createTeamScore } from '../factories/score.factory';
 import { config } from 'dotenv';
 import * as faker from 'faker';
 
-// Load environment variables
 config();
 
-// Configure the connection
 const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST,
@@ -30,7 +28,6 @@ const AppDataSource = new DataSource({
   },
 });
 
-// Number of seed records
 const NUM_GAMES = 10;
 const NUM_SESSIONS_PER_GAME = 2;
 const NUM_TEAMS_PER_SESSION = 3;
@@ -43,11 +40,9 @@ async function seed() {
   console.log('Starting seed process...');
 
   try {
-    // Initialize the data source
     await AppDataSource.initialize();
     console.log('Database connected successfully');
 
-    // Clear existing data
     await AppDataSource.manager.query('TRUNCATE "score" CASCADE');
     await AppDataSource.manager.query('TRUNCATE "player" CASCADE');
     await AppDataSource.manager.query('TRUNCATE "team" CASCADE');
@@ -55,7 +50,6 @@ async function seed() {
     await AppDataSource.manager.query('TRUNCATE "game" CASCADE');
     console.log('Cleared existing data');
 
-    // Seed games
     const games: Game[] = [];
     for (let i = 0; i < NUM_GAMES; i++) {
       const gameData = createGame();
@@ -64,10 +58,8 @@ async function seed() {
     }
     console.log(`Created ${games.length} games`);
 
-    // Seed sessions, teams, players, and scores
     for (const game of games) {
       for (let i = 0; i < NUM_SESSIONS_PER_GAME; i++) {
-        // Create a session with 1-3 random games including the current game
         const sessionGames = faker.random.arrayElements(
           games,
           faker.random.number({ min: 1, max: 3 }),
@@ -80,7 +72,6 @@ async function seed() {
         const savedSession = await AppDataSource.manager.save(session);
         console.log(`Created session for game: ${game.name}`);
 
-        // Seed teams
         const teams: Team[] = [];
         for (let j = 0; j < NUM_TEAMS_PER_SESSION; j++) {
           const teamData = createTeam(savedSession);
@@ -91,7 +82,6 @@ async function seed() {
           `Created ${teams.length} teams for session: ${savedSession.id}`,
         );
 
-        // Seed team players
         for (const team of teams) {
           for (let k = 0; k < NUM_PLAYERS_PER_TEAM; k++) {
             const playerData = createPlayer(savedSession, team);
@@ -101,7 +91,6 @@ async function seed() {
         }
         console.log(`Created players for teams`);
 
-        // Seed solo players
         for (let k = 0; k < NUM_SOLO_PLAYERS_PER_SESSION; k++) {
           const playerData = createPlayer(savedSession);
           const player = AppDataSource.manager.create(Player, playerData);
@@ -109,12 +98,10 @@ async function seed() {
         }
         console.log(`Created solo players for session: ${savedSession.id}`);
 
-        // Get all players and teams for the session
         const allPlayers = await AppDataSource.manager.find(Player, {
           where: { session: { id: savedSession.id } },
         });
 
-        // Seed team scores
         for (const team of teams) {
           for (let k = 0; k < NUM_TEAM_SCORES; k++) {
             const scoreData = createTeamScore(team, savedSession);
@@ -124,7 +111,6 @@ async function seed() {
         }
         console.log(`Created team scores for session: ${savedSession.id}`);
 
-        // Seed player scores
         for (const player of allPlayers) {
           for (let k = 0; k < NUM_PLAYER_SCORES; k++) {
             const scoreData = createPlayerScore(player, savedSession);
@@ -140,7 +126,6 @@ async function seed() {
   } catch (error) {
     console.error('Error during seed:', error);
   } finally {
-    // Close the connection
     if (AppDataSource.isInitialized) {
       await AppDataSource.destroy();
       console.log('Database connection closed');
@@ -148,5 +133,4 @@ async function seed() {
   }
 }
 
-// Run the seed function
 seed();

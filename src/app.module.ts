@@ -25,7 +25,7 @@ import { GameAnalytics } from './analytics/entities/game-analytics.entity';
     TypeOrmModule.forRoot({
       ...dataSourceOptions,
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production', // Only synchronize in development
+      synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV !== 'production',
       entities: [Game, Session, Player, Team, GameAnalytics],
     }),

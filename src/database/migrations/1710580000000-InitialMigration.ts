@@ -4,7 +4,6 @@ export class InitialMigration1710580000000 implements MigrationInterface {
   name = 'InitialMigration1710580000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Games table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "game" (
         "id" SERIAL PRIMARY KEY,
@@ -13,7 +12,6 @@ export class InitialMigration1710580000000 implements MigrationInterface {
       )
     `);
 
-    // Sessions table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "session" (
         "id" SERIAL PRIMARY KEY,
@@ -23,7 +21,6 @@ export class InitialMigration1710580000000 implements MigrationInterface {
       )
     `);
 
-    // Teams table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "team" (
         "id" SERIAL PRIMARY KEY,
@@ -33,7 +30,6 @@ export class InitialMigration1710580000000 implements MigrationInterface {
       )
     `);
 
-    // Players table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "player" (
         "id" SERIAL PRIMARY KEY,
@@ -45,7 +41,6 @@ export class InitialMigration1710580000000 implements MigrationInterface {
       )
     `);
 
-    // Scores table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "score" (
         "id" SERIAL PRIMARY KEY,

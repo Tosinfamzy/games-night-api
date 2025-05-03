@@ -198,7 +198,6 @@ export class GamesService {
     return this.gameRepository.save(game);
   }
 
-  // Rule management methods
   async addRule(gameId: number, createRuleDto: CreateRuleDto): Promise<Rule> {
     const game = await this.findGameById(gameId);
 
@@ -243,15 +242,12 @@ export class GamesService {
     await this.ruleRepository.remove(rule);
   }
 
-  // Helper method to initialize default games and rules
   async initializeDefaultGamesAndRules(): Promise<void> {
-    // Check if games already exist
     const existingGames = await this.gameRepository.find();
     if (existingGames.length > 0) {
-      return; // Default games already exist
+      return;
     }
 
-    // UNO
     const uno = await this.gameRepository.save(
       this.gameRepository.create({
         name: 'UNO',
@@ -292,7 +288,6 @@ export class GamesService {
       }),
     ]);
 
-    // Articulate
     const articulate = await this.gameRepository.save(
       this.gameRepository.create({
         name: 'Articulate',
@@ -325,7 +320,6 @@ export class GamesService {
       }),
     ]);
 
-    // Cards Against Humanity
     const cah = await this.gameRepository.save(
       this.gameRepository.create({
         name: 'Cards Against Humanity',
@@ -360,7 +354,6 @@ export class GamesService {
       }),
     ]);
 
-    // Blackjack
     const blackjack = await this.gameRepository.save(
       this.gameRepository.create({
         name: 'Blackjack',

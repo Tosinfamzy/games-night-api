@@ -9,7 +9,6 @@ async function bootstrap() {
     const gamesService = app.get(GamesService);
     console.log('Starting seed process...');
 
-    // Initialize default games and rules
     await gamesService.initializeDefaultGamesAndRules();
     console.log('Default games and rules seeded successfully!');
   } catch (error) {
