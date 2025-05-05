@@ -1,4 +1,14 @@
-import { Body, Controller, Post, Get, Param, Delete, BadRequestException, ParseIntPipe, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Param,
+  Delete,
+  BadRequestException,
+  ParseIntPipe,
+  NotFoundException,
+} from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { AddPlayerToTeamDto } from './dto/add-player-to-team.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
@@ -54,10 +64,13 @@ export class TeamsController {
   @ApiParam({ name: 'id', type: 'number' })
   async addPlayerToTeam(
     @Param('id', ParseIntPipe) teamId: number,
-    @Body() addPlayerDto: AddPlayerToTeamDto
+    @Body() addPlayerDto: AddPlayerToTeamDto,
   ) {
     try {
-      return await this.teamsService.addPlayerToTeam(teamId, addPlayerDto.playerId);
+      return await this.teamsService.addPlayerToTeam(
+        teamId,
+        addPlayerDto.playerId,
+      );
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -72,7 +85,7 @@ export class TeamsController {
   @ApiParam({ name: 'playerId', type: 'number' })
   async removePlayerFromTeam(
     @Param('id', ParseIntPipe) teamId: number,
-    @Param('playerId', ParseIntPipe) playerId: number
+    @Param('playerId', ParseIntPipe) playerId: number,
   ) {
     try {
       await this.teamsService.removePlayerFromTeam(teamId, playerId);

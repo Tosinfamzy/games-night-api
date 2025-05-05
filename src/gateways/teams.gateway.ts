@@ -35,33 +35,33 @@ export class TeamsGateway {
       // Verify the player belongs to this team before joining the room
       const player = await this.playersService.findOne(data.playerId);
       if (!player || player.team?.id !== data.teamId) {
-        return { 
-          success: false, 
-          message: 'Player is not a member of this team' 
+        return {
+          success: false,
+          message: 'Player is not a member of this team',
         };
       }
 
       // Join the team room
       client.join(`team_${data.teamId}`);
-      
+
       // Notify everyone in the team room that a new member joined
       this.server.to(`team_${data.teamId}`).emit('teamMemberJoined', {
         playerId: data.playerId,
-        playerName: player.name
+        playerName: player.name,
       });
-      
-      return { 
-        event: 'joinedTeam', 
-        data: { 
+
+      return {
+        event: 'joinedTeam',
+        data: {
           teamId: data.teamId,
-          success: true 
-        } 
+          success: true,
+        },
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: 'Failed to join team room',
-        error: error.message 
+        error: error.message,
       };
     }
   }
@@ -74,30 +74,30 @@ export class TeamsGateway {
     try {
       // Get player info before leaving
       const player = await this.playersService.findOne(data.playerId);
-      
+
       // Leave the team room
       client.leave(`team_${data.teamId}`);
-      
+
       // Notify everyone in the team that a member left
       if (player) {
         this.server.to(`team_${data.teamId}`).emit('teamMemberLeft', {
           playerId: data.playerId,
-          playerName: player.name
+          playerName: player.name,
         });
       }
-      
-      return { 
-        event: 'leftTeam', 
+
+      return {
+        event: 'leftTeam',
         data: {
           teamId: data.teamId,
-          success: true
-        }
+          success: true,
+        },
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: 'Failed to leave team room',
-        error: error.message 
+        error: error.message,
       };
     }
   }
@@ -111,9 +111,9 @@ export class TeamsGateway {
       // Verify the player belongs to this team
       const player = await this.playersService.findOne(data.playerId);
       if (!player || player.team?.id !== data.teamId) {
-        return { 
-          success: false, 
-          message: 'Player is not a member of this team' 
+        return {
+          success: false,
+          message: 'Player is not a member of this team',
         };
       }
 
@@ -122,18 +122,18 @@ export class TeamsGateway {
         playerId: data.playerId,
         playerName: player.name,
         message: data.message,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
-      
-      return { 
-        success: true, 
-        message: 'Message sent to team'
+
+      return {
+        success: true,
+        message: 'Message sent to team',
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: 'Failed to send team message',
-        error: error.message 
+        error: error.message,
       };
     }
   }
