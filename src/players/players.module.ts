@@ -9,5 +9,6 @@ import { Session } from 'src/sessions/entities/session.entity';
   imports: [TypeOrmModule.forFeature([Player, Session])],
   controllers: [PlayersController],
   providers: [PlayersService],
+  exports: [PlayersService], // Export PlayersService so it can be used in other modules
 })
 export class PlayersModule {}
