@@ -82,7 +82,7 @@ export class SessionsService {
       players: [host],
       hostId: host.id,
       isActive: true,
-      status: SessionStatus.PENDING,
+      status: SessionStatus.IN_PROGRESS,
       joinCode,
     });
 
@@ -167,8 +167,8 @@ export class SessionsService {
   async addGames(id: string, addGamesDto: AddGamesDto): Promise<Session> {
     const session = await this.findOne(id, addGamesDto.hostId);
 
-    if (session.status !== SessionStatus.PENDING) {
-      throw new BadRequestException('Can only add games to a pending session');
+    if (session.status === SessionStatus.COMPLETED) {
+      throw new BadRequestException('Cannot add games to a completed session');
     }
 
     const games = await this.gameRepository.find({
@@ -306,10 +306,9 @@ export class SessionsService {
   async startSession(id: string, hostId: number): Promise<Session> {
     const session = await this.findOne(id, hostId);
 
-    if (session.status !== SessionStatus.PENDING) {
-      throw new BadRequestException(
-        'Session can only be started from PENDING status',
-      );
+    // Check if session is already completed
+    if (session.status === SessionStatus.COMPLETED) {
+      throw new BadRequestException('Cannot start a completed session');
     }
 
     if (!session.games || session.games.length === 0) {
@@ -320,16 +319,19 @@ export class SessionsService {
       throw new BadRequestException('Cannot start session without players');
     }
 
-    session.status = SessionStatus.IN_PROGRESS;
-    session.currentGame = session.games[0];
-    const updatedSession = await this.sessionRepository.save(session);
+    // Set the current game if not already set
+    if (!session.currentGame && session.games.length > 0) {
+      session.currentGame = session.games[0];
+      const updatedSession = await this.sessionRepository.save(session);
 
-    this.sessionsGateway.notifySessionUpdate(id, 'sessionStarted', {
-      status: SessionStatus.IN_PROGRESS,
-      currentGame: session.currentGame,
-    });
+      this.sessionsGateway.notifySessionUpdate(id, 'gameSelected', {
+        currentGame: session.currentGame,
+      });
 
-    return updatedSession;
+      return updatedSession;
+    }
+
+    return session;
   }
 
   async endSession(id: string, hostId: number): Promise<Session> {

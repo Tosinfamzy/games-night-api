@@ -74,7 +74,7 @@ games-night-backend/
 - Real-time scoring with WebSocket support
 - Versioned game rules system
 - Game state management (SETUP, READY, IN_PROGRESS, COMPLETED)
-- Session state tracking (PENDING, IN_PROGRESS, COMPLETED)
+- Session state tracking (IN_PROGRESS, COMPLETED)
 - Game analytics and statistics tracking
 - Swagger API documentation
 - TypeORM database integration
@@ -96,7 +96,9 @@ games-night-backend/
 3. **Player Management**
 
    - Add players to the session
-   - Create teams and assign players
+   - Create teams and assign players (random or custom teams)
+     - Random teams: Evenly distributes players among teams
+     - Custom teams: Manually assign players to specific teams
    - Track player ready status
 
 4. **Game Management**
@@ -193,6 +195,41 @@ Once the application is running, you can access the Swagger API documentation at
 ```
 http://localhost:3000/api
 ```
+
+### Team Creation Features
+
+The application offers two ways to create teams:
+
+1. **Random Teams**
+
+   - Endpoint: `POST /sessions/{id}/teams/random`
+   - Automatically creates balanced teams by randomly distributing players
+   - Requires the number of teams to create and hostId for authorization
+   - Example request:
+     ```json
+     {
+       "numberOfTeams": 2
+     }
+     ```
+
+2. **Custom Teams**
+   - Endpoint: `POST /sessions/{id}/teams/custom`
+   - Allows manual specification of teams and player assignments
+   - Example request:
+     ```json
+     {
+       "teams": [
+         {
+           "teamName": "Team Alpha",
+           "playerIds": [1, 2, 3]
+         },
+         {
+           "teamName": "Team Beta",
+           "playerIds": [4, 5, 6]
+         }
+       ]
+     }
+     ```
 
 ## Testing
 

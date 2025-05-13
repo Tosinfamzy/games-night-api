@@ -17,7 +17,6 @@ import { Team } from '../../teams/entities/team.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum SessionStatus {
-  PENDING = 'pending',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
 }
@@ -62,7 +61,7 @@ export class Session {
   @Column({
     type: 'enum',
     enum: SessionStatus,
-    default: SessionStatus.PENDING,
+    default: SessionStatus.IN_PROGRESS,
   })
   status: SessionStatus;
 

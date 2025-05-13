@@ -29,6 +29,8 @@ import { AddGamesDto } from './dto/add-games.dto';
 import { Player } from '../players/entities/player.entity';
 import { JoinSessionDto } from './dto/join-session.dto';
 import { LookupSessionDto } from './dto/lookup-session.dto';
+import { CreateRandomTeamsDto } from './dto/create-random-teams.dto';
+import { CreateCustomTeamsDto } from './dto/create-custom-teams.dto';
 
 @ApiTags('sessions')
 @Controller('sessions')
@@ -252,6 +254,10 @@ export class SessionsController {
     required: true,
     type: Number,
   })
+  @ApiBody({
+    type: CreateRandomTeamsDto,
+    description: 'Number of teams to create randomly',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Teams created successfully',
@@ -271,7 +277,7 @@ export class SessionsController {
   })
   createRandomTeams(
     @Param('id') id: string,
-    @Body('numberOfTeams') numberOfTeams: number,
+    @Body() createRandomTeamsDto: CreateRandomTeamsDto,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
     if (!this.isValidUuid(id)) {
@@ -284,7 +290,7 @@ export class SessionsController {
     }
     return this.sessionsService.createRandomTeams(
       id,
-      numberOfTeams,
+      createRandomTeamsDto.numberOfTeams,
       parsedHostId,
     );
   }
@@ -297,6 +303,10 @@ export class SessionsController {
     description: 'ID of the host',
     required: true,
     type: Number,
+  })
+  @ApiBody({
+    type: CreateCustomTeamsDto,
+    description: 'Custom team configurations with player assignments',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -317,7 +327,7 @@ export class SessionsController {
   })
   createCustomTeams(
     @Param('id') id: string,
-    @Body('teams') teams: { teamName: string; playerIds: number[] }[],
+    @Body() createCustomTeamsDto: CreateCustomTeamsDto,
     @Query('hostId') hostId: string,
   ): Promise<Session> {
     if (!this.isValidUuid(id)) {
@@ -328,11 +338,15 @@ export class SessionsController {
     if (isNaN(parsedHostId)) {
       throw new BadRequestException('hostId must be a valid number');
     }
-    return this.sessionsService.createCustomTeams(id, teams, parsedHostId);
+    return this.sessionsService.createCustomTeams(
+      id,
+      createCustomTeamsDto.teams,
+      parsedHostId,
+    );
   }
 
   @Post(':id/start')
-  @ApiOperation({ summary: 'Start a session' })
+  @ApiOperation({ summary: 'Start or initialize a session game' })
   @ApiParam({ name: 'id', description: 'Session ID (UUID)' })
   @ApiQuery({
     name: 'hostId',
@@ -346,7 +360,8 @@ export class SessionsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid session state',
+    description:
+      'Cannot start a completed session or session without games/players',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
@@ -491,7 +506,7 @@ export class SessionsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Cannot add games to non-pending session',
+    description: 'Cannot add games to a completed session',
   })
   addGames(
     @Param('id') id: string,
