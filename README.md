@@ -1,6 +1,28 @@
 # Games Night Backend
 
+[![CI Pipeline](https://github.com/tosinfamzy/games-night-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/tosinfamzy/games-night-backend/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/tosinfamzy/games-night-backend/branch/main/graph/badge.svg)](https://codecov.io/gh/tosinfamzy/games-night-backend)
+[![Docker](https://img.shields.io/docker/image-size/tosinfamzy/games-night-backend)](https://hub.docker.com/r/tosinfamzy/games-night-backend)
+
 A NestJS backend application for managing game sessions, players, teams, scoring, analytics, and versioned game rules.
+
+## Quick Start
+
+For the fastest setup, use the automated development setup script:
+
+```bash
+git clone https://github.com/tosinfamzy/games-night-backend.git
+cd games-night-backend
+npm run setup:dev
+```
+
+This will automatically:
+
+- Install dependencies
+- Create `.env` file
+- Set up PostgreSQL (with Docker if available)
+- Run migrations and seed data
+- Verify the setup with tests
 
 ## Project Structure
 
@@ -141,7 +163,7 @@ The application uses PostgreSQL with TypeORM for database management. Session ID
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/games-night-backend.git
+git clone https://github.com/tosinfamzy/games-night-backend.git
 cd games-night-backend
 ```
 
@@ -151,14 +173,20 @@ cd games-night-backend
 npm install
 ```
 
-3. Create a `.env` file in the root directory:
+3. Create a `.env` file in the root directory (copy from .env.example):
+
+```bash
+cp .env.example .env
+```
+
+Then update the `.env` file with your database credentials:
 
 ```env
-DATABASE_HOST=
-DATABASE_PORT=
-DATABASE_USER=
-DATABASE_PASSWORD=
-DATABASE_NAME=
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=games_night_user
+DATABASE_PASSWORD=games_night_pass
+DATABASE_NAME=games_night_dev
 ```
 
 4. Run database migrations:
@@ -175,6 +203,8 @@ npm run seed
 
 ## Running the Application
 
+### Local Development
+
 Development mode:
 
 ```bash
@@ -186,6 +216,29 @@ Production mode:
 ```bash
 npm run build
 npm run start:prod
+```
+
+### Docker Development
+
+Run with Docker Compose for development (includes PostgreSQL and Redis):
+
+```bash
+npm run docker:dev
+```
+
+### Docker Production
+
+Run with Docker Compose for production:
+
+```bash
+npm run docker:prod
+```
+
+Build and run Docker container manually:
+
+```bash
+npm run docker:build
+npm run docker:run
 ```
 
 ## API Documentation
@@ -238,3 +291,88 @@ Run unit tests:
 ```bash
 npm run test
 ```
+
+Run end-to-end tests:
+
+```bash
+npm run test:e2e
+```
+
+Run tests with coverage:
+
+```bash
+npm run test:cov
+```
+
+Run all CI tests locally:
+
+```bash
+npm run ci:test
+```
+
+## Development Setup
+
+Quick setup for new developers:
+
+```bash
+npm run setup:dev
+```
+
+This script will:
+
+- Check Node.js version compatibility
+- Install dependencies
+- Create `.env` file from template
+- Optionally start PostgreSQL with Docker
+- Run database migrations
+- Seed the database
+- Run tests to verify setup
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment:
+
+### Workflows
+
+- **CI Pipeline** (`.github/workflows/ci.yml`)
+
+  - Runs on every push and PR
+  - Code quality checks (ESLint, Prettier, TypeScript)
+  - Unit and e2e tests with PostgreSQL
+  - Build verification
+  - Security scanning
+
+- **Code Quality** (`.github/workflows/code-quality.yml`)
+
+  - Advanced code quality checks
+  - Test coverage reporting
+  - Bundle size analysis
+  - Dependency vulnerability scanning
+
+- **Release** (`.github/workflows/release.yml`)
+
+  - Automated releases on git tags
+  - Docker image building and publishing
+  - Changelog generation
+  - NPM package publishing
+
+- **PR Automation** (`.github/workflows/pr-automation.yml`)
+  - Auto-label PRs based on changed files
+  - Size labeling based on lines changed
+  - Welcome comments for new contributors
+
+### Prerequisites for CI/CD
+
+To use all features, configure these secrets in your GitHub repository:
+
+- `SNYK_TOKEN` - For security scanning (optional)
+- `NPM_TOKEN` - For NPM publishing (optional)
+- `CODECOV_TOKEN` - For coverage reporting (optional)
+
+### Docker Support
+
+The project includes multi-stage Docker builds:
+
+- **Development**: `Dockerfile.dev` with hot reloading
+- **Production**: `Dockerfile` with optimized builds
+- **Docker Compose**: Ready-to-use configurations for both environments

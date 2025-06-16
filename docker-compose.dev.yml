@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: tosinfamzy/games-night-backend:dev
+    container_name: games-night-backend-dev
+    ports:
+      - '3000:3000'
+      - '9229:9229' # Debug port
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=games_night_user
+      - DATABASE_PASSWORD=games_night_pass
+      - DATABASE_NAME=games_night_dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: npm run start:dev
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=games_night_user
+      - POSTGRES_PASSWORD=games_night_pass
+      - POSTGRES_DB=games_night_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U games_night_user -d games_night_dev']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  app-network:
+    driver: bridge

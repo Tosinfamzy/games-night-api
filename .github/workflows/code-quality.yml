@@ -1,0 +1,110 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality-checks:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript compiler
+        run: npm run build
+
+      - name: Run ESLint
+        run: npm run lint:check
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+
+      - name: Check for unused dependencies
+        run: npx depcheck
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level moderate
+
+      - name: Bundle size analysis
+        run: |
+          npm run build
+          npx bundlesize
+
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: games_night_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USER: testuser
+      DATABASE_PASSWORD: testpass
+      DATABASE_NAME: games_night_test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database migrations
+        run: npm run migration:run
+
+      - name: Run tests with coverage
+        run: npm run test:cov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Coverage threshold check
+        run: |
+          # Extract coverage percentage from coverage summary
+          coverage=$(grep -oP '(?<=Lines\s+:\s)\d+(?=\.\d+%)' coverage/lcov-report/index.html || echo "0")
+          echo "Coverage: ${coverage}%"
+          if [ "$coverage" -lt 80 ]; then
+            echo "❌ Coverage is below 80%"
+            exit 1
+          else
+            echo "✅ Coverage meets threshold (80%)"
+          fi

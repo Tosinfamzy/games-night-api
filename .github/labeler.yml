@@ -1,0 +1,45 @@
+# Simplified labeler configuration
+# Automatically add labels to PRs based on changed files
+
+# Backend/API changes
+backend:
+  - 'src/**'
+
+# Database related changes
+database:
+  - 'src/database/**'
+  - 'src/config/data-source.ts'
+  - '**/*migration*'
+
+# Game features
+games:
+  - 'src/games/**'
+  - 'src/scoring/**'
+
+# Testing
+tests:
+  - 'test/**'
+  - '**/*.spec.ts'
+  - '**/*.test.ts'
+
+# Documentation
+docs:
+  - '*.md'
+  - 'docs/**'
+
+# Configuration
+config:
+  - '*.json'
+  - '*.yml'
+  - '*.yaml'
+  - 'Dockerfile*'
+  - 'docker-compose*'
+
+# CI/CD
+ci:
+  - '.github/**'
+
+# Dependencies
+dependencies:
+  - 'package.json'
+  - 'package-lock.json'

@@ -1,0 +1,39 @@
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  pr-automation:
+    name: PR Automation
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Add labels based on files changed
+        uses: actions/labeler@v5
+        with:
+          configuration-path: '.github/labeler.yml'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Welcome comment
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Thanks for your contribution! 🎉
+
+            Your PR has been automatically labeled based on the files changed.
+
+            ### Before merging:
+            - [ ] All CI checks pass
+            - [ ] Code has been reviewed
+            - [ ] Tests are passing
+
+            Happy coding! 🎮`
+            })
