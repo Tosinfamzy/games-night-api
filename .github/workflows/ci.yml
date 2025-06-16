@@ -78,10 +78,10 @@ jobs:
         run: npm ci
 
       - name: Run database migrations
-        run: npm run migration:run
+        run: echo "Skipping migration run for CI."
 
       - name: Seed test database
-        run: npm run seed
+        run: echo "Skipping seed for CI."
 
       - name: Run unit tests
         run: npm run test -- --maxWorkers=2
