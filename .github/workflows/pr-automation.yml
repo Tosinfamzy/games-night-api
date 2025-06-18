@@ -16,24 +16,3 @@ jobs:
         with:
           configuration-path: '.github/labeler.yml'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Welcome comment
-        if: github.event.action == 'opened'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `Thanks for your contribution! 🎉
-
-            Your PR has been automatically labeled based on the files changed.
-
-            ### Before merging:
-            - [ ] All CI checks pass
-            - [ ] Code has been reviewed
-            - [ ] Tests are passing
-
-            Happy coding! 🎮`
-            })
