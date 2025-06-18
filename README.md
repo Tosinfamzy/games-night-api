@@ -49,7 +49,7 @@ games-night-backend/
 │   ├── gateways/          # WebSocket gateways
 │   │   ├── gateway.module.ts
 │   │   ├── score.gateway.ts
-│   │   └── sessions.gateway.ts
+│   │   └── teams.gateway.ts
 │   ├── players/           # Players module
 │   │   ├── dto/          # Data Transfer Objects
 │   │   ├── entities/     # Database entities
@@ -340,13 +340,6 @@ This project uses GitHub Actions for continuous integration and deployment:
   - Unit and e2e tests with PostgreSQL
   - Build verification
   - Security scanning
-
-- **Code Quality** (`.github/workflows/code-quality.yml`)
-
-  - Advanced code quality checks
-  - Test coverage reporting
-  - Bundle size analysis
-  - Dependency vulnerability scanning
 
 - **Release** (`.github/workflows/release.yml`)
 
