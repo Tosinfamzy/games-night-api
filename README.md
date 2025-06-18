@@ -2,7 +2,6 @@
 
 [![CI Pipeline](https://github.com/tosinfamzy/games-night-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/tosinfamzy/games-night-backend/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/tosinfamzy/games-night-backend/branch/main/graph/badge.svg)](https://codecov.io/gh/tosinfamzy/games-night-backend)
-[![Docker](https://img.shields.io/docker/image-size/tosinfamzy/games-night-backend)](https://hub.docker.com/r/tosinfamzy/games-night-backend)
 
 A NestJS backend application for managing game sessions, players, teams, scoring, analytics, and versioned game rules.
 
