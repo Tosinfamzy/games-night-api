@@ -8,4 +8,4 @@ export class AddPlayerDto {
   })
   @IsNumber()
   playerId: number;
-} 
+}

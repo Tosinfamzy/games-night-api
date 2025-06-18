@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsPositive, Min, Max } from 'class-validator';
+import { IsInt, IsPositive, Min } from 'class-validator';
 
 export class CreateRandomTeamsDto {
   @ApiProperty({

@@ -6,7 +6,6 @@ import {
   Param,
   Put,
   Delete,
-  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -14,13 +13,11 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { GamesService } from './games.service';
-import { Game, GameState, GameType } from './entities/game.entity';
+import { Game, GameState } from './entities/game.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameSetupDto } from './dto/game-setup.dto';
-import { PlayerReadyDto } from './dto/player-ready.dto';
 import { AddPlayerDto } from './dto/add-player.dto';
 import {
   GameParticipant,

@@ -9,7 +9,6 @@ import { Repository } from 'typeorm';
 import { Game, GameState, GameType } from './entities/game.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameSetupDto } from './dto/game-setup.dto';
-import { PlayerReadyDto } from './dto/player-ready.dto';
 import {
   GameParticipant,
   ParticipantStatus,

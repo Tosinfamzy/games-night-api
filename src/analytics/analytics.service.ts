@@ -130,7 +130,7 @@ export class AnalyticsService {
     sessions.forEach((session) => {
       session.players?.forEach((player) => {
         const participant = player.gameParticipants?.find(
-          (p) => p.game.id === session.currentGame?.id
+          (p) => p.game.id === session.currentGame?.id,
         );
         if (participant) {
           readinessStats[participant.status]++;

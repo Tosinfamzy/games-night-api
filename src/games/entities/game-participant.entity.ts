@@ -12,7 +12,7 @@ import { Player } from '../../players/entities/player.entity';
 
 export enum ParticipantStatus {
   JOINED = 'joined',
-  READY = 'ready'
+  READY = 'ready',
 }
 
 @Entity()
@@ -63,4 +63,4 @@ export class GameParticipant {
   })
   @UpdateDateColumn()
   updatedAt: Date;
-} 
+}

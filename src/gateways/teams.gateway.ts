@@ -105,6 +105,7 @@ export class TeamsGateway {
   @SubscribeMessage('teamMessage')
   async handleTeamMessage(
     @MessageBody() data: { teamId: number; playerId: number; message: string },
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     @ConnectedSocket() client: Socket,
   ) {
     try {

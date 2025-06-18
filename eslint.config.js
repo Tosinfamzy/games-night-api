@@ -1,3 +1,4 @@
+// Use ESM syntax for ESLint config with ESLint v9
 import { defineConfig } from 'eslint-define-config';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import parser from '@typescript-eslint/parser';
