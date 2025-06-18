@@ -40,7 +40,9 @@ jobs:
 
       - name: Check for security vulnerabilities
         run: |
-          npm audit --audit-level moderate || true
+          set +e
+          npm audit --audit-level moderate
+          set -e
         # The command will always succeed, so the job will not fail on vulnerabilities
 
       # - name: Bundle size analysis
