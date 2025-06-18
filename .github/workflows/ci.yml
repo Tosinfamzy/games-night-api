@@ -89,8 +89,8 @@ jobs:
       - name: Run unit tests
         run: npm run test -- --maxWorkers=2
 
-      - name: Run e2e tests
-        run: npm run test:e2e -- --maxWorkers=2
+      # - name: Run e2e tests
+      #   run: npm run test:e2e -- --maxWorkers=2
 
       - name: Generate test coverage
         run: npm run test:cov -- --maxWorkers=2

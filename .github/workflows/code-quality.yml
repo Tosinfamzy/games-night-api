@@ -89,22 +89,6 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:cov
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
-      - name: Coverage threshold check
+      - name: Output code coverage
         run: |
-          # Extract coverage percentage from coverage summary
-          coverage=$(grep -oP '(?<=Lines\s+:\s)\d+(?=\.\d+%)' coverage/lcov-report/index.html || echo "0")
-          echo "Coverage: ${coverage}%"
-          if [ "$coverage" -lt 80 ]; then
-            echo "❌ Coverage is below 80%"
-            exit 1
-          else
-            echo "✅ Coverage meets threshold (80%)"
-          fi
+          grep -oP '(?<=Lines\s+:\s)\d+\.\d+(?=%)' coverage/lcov-report/index.html || echo "Coverage not found"

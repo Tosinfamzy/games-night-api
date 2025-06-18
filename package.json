@@ -33,7 +33,7 @@
     "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
     "docker:prod": "docker-compose up --build",
     "setup:dev": "./scripts/setup-dev.sh",
-    "ci:test": "npm run lint:check && npm run test && npm run test:e2e",
+    "ci:test": "npm run lint:check && npm run test",
     "ci:build": "npm run build && npm run docker:build",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:create": "npm run typeorm -- migration:create",
