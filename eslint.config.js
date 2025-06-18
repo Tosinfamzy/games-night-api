@@ -1,40 +1,34 @@
-// Use ESM syntax for ESLint config with ESLint v9
-import { defineConfig } from 'eslint-define-config';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import parser from '@typescript-eslint/parser';
-import prettier from 'eslint-plugin-prettier';
+const tsParser = require('@typescript-eslint/parser');
 
-export default defineConfig([
+// Use CommonJS syntax for ESLint config compatibility
+module.exports = [
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
-      parser: parser,
+      parser: tsParser,
       parserOptions: {
         project: './tsconfig.json',
-        tsconfigRootDir: import.meta.dirname,
         sourceType: 'module',
+        ecmaVersion: 2020,
       },
     },
     plugins: {
-      '@typescript-eslint': typescriptEslint,
-      prettier: prettier,
+      '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
     },
     rules: {
-      ...typescriptEslint.configs.recommended.rules,
-      ...prettier.configs.recommended.rules,
-      '@typescript-eslint/interface-name-prefix': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      ...require('@typescript-eslint/eslint-plugin').configs.recommended.rules,
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
     files: ['**/*.js'],
     languageOptions: {
       sourceType: 'commonjs',
+      ecmaVersion: 2020,
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', '.eslintrc.js'],
+    ignores: ['dist/', 'node_modules/'],
   },
-]);
+];

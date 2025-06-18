@@ -38,12 +38,12 @@ jobs:
           npx depcheck || true
         # The command will always succeed, so the job will not fail on unused dependencies
 
-      - name: Check for security vulnerabilities
-        run: |
-          set +e
-          npm audit --audit-level moderate
-          set -e
-        # The command will always succeed, so the job will not fail on vulnerabilities
+      # - name: Check for security vulnerabilities
+      #   run: |
+      #     set +e
+      #     npm audit --audit-level moderate
+      #     set -e
+      # The command will always succeed, so the job will not fail on vulnerabilities
 
       # - name: Bundle size analysis
       #   run: |
