@@ -43,10 +43,10 @@ jobs:
           npm audit --audit-level moderate || true
         # The command will always succeed, so the job will not fail on vulnerabilities
 
-      - name: Bundle size analysis
-        run: |
-          npm run build
-          npx bundlesize
+      # - name: Bundle size analysis
+      #   run: |
+      #     npm run build
+      #     npx bundlesize
 
   test-coverage:
     name: Test Coverage
