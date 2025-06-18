@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Player, PlayerType } from './entities/player.entity';
-import { Session } from 'src/sessions/entities/session.entity';
+import { Session } from '../sessions/entities/session.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateHostPlayerDto } from './dto/create-host-player.dto';

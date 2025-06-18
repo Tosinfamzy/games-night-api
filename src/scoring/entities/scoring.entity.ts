@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Player } from 'src/players/entities/player.entity';
-import { Team } from 'src/teams/entities/team.entity';
-import { Session } from 'src/sessions/entities/session.entity';
-import { Game } from 'src/games/entities/game.entity';
+import { Player } from '../../players/entities/player.entity';
+import { Team } from '../../teams/entities/team.entity';
+import { Session } from '../../sessions/entities/session.entity';
+import { Game } from '../../games/entities/game.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

@@ -4,12 +4,12 @@ import {
   forwardRef,
   NotFoundException,
 } from '@nestjs/common';
-import { Session } from 'src/sessions/entities/session.entity';
+import { Session } from '../sessions/entities/session.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Team } from './entities/team.entity';
-import { TeamsGateway } from 'src/gateways/teams.gateway';
-import { Player } from 'src/players/entities/player.entity';
+import { TeamsGateway } from '../gateways/teams.gateway';
+import { Player } from '../players/entities/player.entity';
 
 @Injectable()
 export class TeamsService {

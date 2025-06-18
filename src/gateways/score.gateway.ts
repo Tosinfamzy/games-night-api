@@ -7,7 +7,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { ScoringService } from 'src/scoring/scoring.service';
+import { ScoringService } from '../scoring/scoring.service';
 import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway({ cors: true })

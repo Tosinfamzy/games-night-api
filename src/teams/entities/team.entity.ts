@@ -1,5 +1,5 @@
-import { Player } from 'src/players/entities/player.entity';
-import { Session } from 'src/sessions/entities/session.entity';
+import { Player } from '../../players/entities/player.entity';
+import { Session } from '../../sessions/entities/session.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

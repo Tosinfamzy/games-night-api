@@ -7,8 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { TeamsService } from 'src/teams/teams.service';
-import { PlayersService } from 'src/players/players.service';
+import { TeamsService } from '../teams/teams.service';
+import { PlayersService } from '../players/players.service';
 
 @Injectable()
 @WebSocketGateway({

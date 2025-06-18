@@ -7,11 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Score } from './entities/scoring.entity';
-import { Player } from 'src/players/entities/player.entity';
-import { Team } from 'src/teams/entities/team.entity';
-import { Session } from 'src/sessions/entities/session.entity';
-import { Game } from 'src/games/entities/game.entity';
-import { ScoreGateway } from 'src/gateways/score.gateway';
+import { Player } from '../players/entities/player.entity';
+import { Team } from '../teams/entities/team.entity';
+import { Session } from '../sessions/entities/session.entity';
+import { Game } from '../games/entities/game.entity';
+import { ScoreGateway } from '../gateways/score.gateway';
 
 @Injectable()
 export class ScoringService {

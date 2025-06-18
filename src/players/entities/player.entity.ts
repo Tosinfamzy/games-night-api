@@ -8,13 +8,13 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Session } from '../../sessions/entities/session.entity';
-import { Team } from 'src/teams/entities/team.entity';
+import { Team } from '../../teams/entities/team.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { GameParticipant } from '../../games/entities/game-participant.entity';
 
 export enum PlayerType {
   HOST = 'host',
-  PARTICIPANT = 'participant'
+  PARTICIPANT = 'participant',
 }
 
 @Entity()
@@ -43,7 +43,7 @@ export class Player {
   @Column({
     type: 'enum',
     enum: PlayerType,
-    default: PlayerType.PARTICIPANT
+    default: PlayerType.PARTICIPANT,
   })
   type: PlayerType;
 
